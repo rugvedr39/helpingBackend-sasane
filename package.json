@@ -13,7 +13,9 @@
     "typescript": "^5.4.5"
   },
   "scripts": {
-    "start": "nodemon --exec src/server.ts"
+    "build": "tsc",
+    "start": "node dist/app.js"
+    // "start": "nodemon --exec src/server.ts"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
