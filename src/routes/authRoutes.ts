@@ -7,9 +7,10 @@ router.post("/login", login);
 
 router.get("/user/:referral_code", async (req, res) => {
   const { referral_code } = req.params;
-
+  console.log(referral_code);
   try {
     const user = await User.findOne({ where: { username: referral_code } });
+    console.log(user);
     if (user) {
       res.status(200).json({ name: user.name, id: user.id });
     } else {
