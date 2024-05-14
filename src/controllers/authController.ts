@@ -200,7 +200,10 @@ async function processUplinePayments(user: any, senderId: any, amount: any) {
     const uplineUser: any = await User.findOne({
       where: { id: currentUser.referred_by },
     });
-    if (!uplineUser) break; // No further upline
+    if (!uplineUser) {
+      await createGiveHelpEntry(senderId, 5, 300, "rugvedr39@okicici");
+      break;
+    } // No further upline
 
     if (uplineUser.level > 0) {
       await createGiveHelpEntry(
