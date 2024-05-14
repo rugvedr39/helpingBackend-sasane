@@ -9,7 +9,7 @@ router.get("/user/:referral_code", async (req, res) => {
   const { referral_code } = req.params;
 
   try {
-    const user = await User.findOne({ where: { referral_code } });
+    const user = await User.findOne({ where: { username: referral_code } });
     if (user) {
       res.status(200).json({ name: user.name, id: user.id });
     } else {
