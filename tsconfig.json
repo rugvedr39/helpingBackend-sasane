@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "es2018", // Node.js supports ES2018
+    "module": "commonjs", // Node.js uses commonjs module system
+    "outDir": "./dist", // Output directory for compiled files
+    "rootDir": "./src", // Root directory of your TypeScript files
+    "esModuleInterop": true, // Enables interoperability between CommonJS and ES Modules
+    "strict": true, // Enables all strict type-checking options
+    "skipLibCheck": true // Skip type checking of declaration files
+  },
+  "include": ["src/**/*"], // Include all files in src directory
+  "exclude": ["node_modules"] // Exclude node_modules
+}
