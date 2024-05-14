@@ -8,7 +8,7 @@ import { GiveHelp } from "../models/give_help";
 const findAvailableSponsor = async (
   referralCode: string,
 ): Promise<User | null> => {
-  const sponsor = await User.findOne({
+  const sponsor: any = await User.findOne({
     where: { username: referralCode },
   });
 
@@ -38,7 +38,7 @@ const findNextAvailableSponsor = async (
       return User.findByPk(currentUserId);
     }
 
-    const children = await User.findAll({
+    const children: any = await User.findAll({
       where: { referred_by: currentUserId },
       attributes: ["id"],
     });
@@ -81,7 +81,7 @@ export const signup = async (req: Request, res: Response) => {
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const sponsorUser = await findAvailableSponsor(referral_code);
+    const sponsorUser: any = await findAvailableSponsor(referral_code);
 
     if (!sponsorUser) {
       return res.status(400).json({
@@ -168,9 +168,9 @@ const generateUsername = () => {
 
 async function findNthReferrer(userId: any, n: number) {
   n = n + 1;
-  let currentUserId = userId;
+  let currentUserId: any = userId;
   for (let i = 0; i < n; i++) {
-    const user = await User.findByPk(currentUserId);
+    const user: any = await User.findByPk(currentUserId);
     if (!user || !user.referred_by) {
       return null;
     }

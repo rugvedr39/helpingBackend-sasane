@@ -180,7 +180,7 @@ export const getReferralTree = async (req: any, res: any) => {
   const userId = parseInt(req.params.id, 10);
 
   try {
-    const user = await User.findByPk(userId);
+    const user: any = await User.findByPk(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -217,11 +217,11 @@ async function getBinaryTreeLevels(userId: any, maxLevel = 10) {
       status: user.status,
     });
     if (current.level < maxLevel) {
-      let children = await User.findAll({
+      let children: any = await User.findAll({
         where: { referred_by: user.id },
       });
 
-      children.forEach((child) => {
+      children.forEach((child: any) => {
         queue.push({ userId: child.id, level: current.level + 1 });
       });
     }
