@@ -95,15 +95,12 @@ export const transferEPin = async (req: Request, res: Response) => {
 
 export const createBulkEPins = async (req: Request, res: Response) => {
   const { count, userId } = req.body;
-
   try {
     const uniqueCodes = new Set<string>();
-
     while (uniqueCodes.size < count) {
       const code = generateUniqueCode();
       uniqueCodes.add(code);
     }
-
     const epinsToCreate: any[] = Array.from(uniqueCodes).map((code) => ({
       code,
       userId,

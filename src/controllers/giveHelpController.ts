@@ -110,8 +110,7 @@ export const TransactionComplete = async (req: any, res: any) => {
     );
 
     let level = 0;
-    if (totalAmount >= 50000) level = 9;
-    else if (totalAmount >= 80200) level = 8;
+    if (totalAmount >= 80200) level = 8;
     else if (totalAmount >= 50200) level = 7;
     else if (totalAmount >= 30200) level = 6;
     else if (totalAmount >= 15200) level = 5;
