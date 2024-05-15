@@ -124,6 +124,7 @@ export const TransactionComplete = async (req: any, res: any) => {
     });
 
     user.level = level;
+    user.status = "Active";
     user = await user.save();
 
     if (level === 1) {
