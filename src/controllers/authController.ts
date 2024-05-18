@@ -187,7 +187,7 @@ async function processReferralPayments(newUser: any, sponser: any) {
     await createGiveHelpEntry(
       newUser.id,
       new_sponser.id,
-      200,
+      300,
       new_sponser.upi_number,
     );
     await processUplinePayments(new_sponser, newUser.id, 300);
@@ -203,7 +203,7 @@ async function processUplinePayments(user: any, senderId: any, amount: any) {
     if (!uplineUser) {
       await createGiveHelpEntry(senderId, 5, 300, "rugvedr39@okicici");
       break;
-    } // No further upline
+    }
 
     if (uplineUser.level > 0) {
       await createGiveHelpEntry(
