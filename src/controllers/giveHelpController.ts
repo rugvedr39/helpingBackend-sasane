@@ -192,6 +192,7 @@ export const TransactionComplete = async (req, res) => {
     res.status(500).send("Error updating UTR Number");
   }
 };
+
 export const getReferralTree = async (req: any, res: any) => {
   const userId = parseInt(req.params.id, 10);
 
@@ -209,31 +210,46 @@ export const getReferralTree = async (req: any, res: any) => {
   }
 };
 
-async function getBinaryTreeLevels(userId: any, maxLevel = 10) {
-  let result: any[] = [];
+async function getBinaryTreeLevels(userId, maxLevel = 10) {
+  let result = [];
   let queue = [{ userId: userId, level: 0 }];
 
   while (queue.length > 0) {
-    let current: any = queue.shift();
+    let current = queue.shift();
     if (current.level > maxLevel) {
       break;
     }
 
     let user: any = await User.findByPk(current.userId);
     if (!user) continue;
+
     if (!result[current.level]) {
       result[current.level] = { level: current.level, count: 0, users: [] };
     }
     result[current.level].count++;
+
+    // Fetch additional details about the person who referred this user
+    let referrer = null;
+    if (user.referred_by) {
+      referrer = await User.findByPk(user.referred_by, {
+        attributes: ["id", "name", "username"],
+      });
+    }
+
     result[current.level].users.push({
       id: user.id,
       name: user.name,
       email: user.email,
+      username: user.username,
       mobile_number: user.mobile_number,
       status: user.status,
+      referred_by: user.referred_by,
+      referrer_name: referrer ? referrer.name : null,
+      referrer_username: referrer ? referrer.username : null,
     });
+
     if (current.level < maxLevel) {
-      let children: any = await User.findAll({
+      let children = await User.findAll({
         where: { referred_by: user.id },
       });
 
@@ -244,7 +260,6 @@ async function getBinaryTreeLevels(userId: any, maxLevel = 10) {
   }
   return result.filter((level) => level.count > 0);
 }
-
 async function createGiveHelpEntry(
   senderId: any,
   receiverId: any,
