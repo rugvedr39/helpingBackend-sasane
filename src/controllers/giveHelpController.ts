@@ -38,7 +38,7 @@ export const updateTransaction = async (req: any, res: any) => {
     const epin = await EPin.findOne({
       where: { code: utrNumber, status: "unused" },
     });
-    if (transaction.amount == 100.0) {
+    if (transaction.amount == 600.0) {
       if (!epin) {
         transaction.status = "Pending";
         await transaction.save();
@@ -105,8 +105,8 @@ export const TransactionComplete = async (req, res) => {
 
     // Filter and limit transactions of 300 to only count the first two
     const transactions300: any = completedTransactions
-      .filter((t: any) => parseFloat(t.amount) === 300)
-      .slice(0, 2);
+      .filter((t: any) => parseFloat(t.amount) === 600)
+      .slice(0, 3);
     const amount300: any = transactions300.reduce(
       (sum, t) => sum + parseFloat(t.amount),
       0,
@@ -116,28 +116,28 @@ export const TransactionComplete = async (req, res) => {
     const totalAmount: any =
       completedTransactions.reduce(
         (sum, t: any) =>
-          sum + (parseFloat(t.amount) !== 300 ? parseFloat(t.amount) : 0),
+          sum + (parseFloat(t.amount) !== 600 ? parseFloat(t.amount) : 0),
         0,
       ) + amount300;
 
     let level = 0;
-    if (totalAmount >= 100000) level = 9;
-    else if (totalAmount >= 80200) level = 8;
-    else if (totalAmount >= 50200) level = 7;
-    else if (totalAmount >= 30200) level = 6;
-    else if (totalAmount >= 15200) level = 5;
-    else if (totalAmount >= 7200) level = 4;
-    else if (totalAmount >= 3200) level = 3;
-    else if (totalAmount >= 1200) level = 2;
-    else if (totalAmount >= 700) level = 1;
+    if (totalAmount >= 82100) level = 9;
+    else if (totalAmount >= 57100) level = 8;
+    else if (totalAmount >= 37100) level = 7;
+    else if (totalAmount >= 22100) level = 6;
+    else if (totalAmount >= 12100) level = 5;
+    else if (totalAmount >= 7100) level = 4;
+    else if (totalAmount >= 4100) level = 3;
+    else if (totalAmount >= 2100) level = 2;
+    else if (totalAmount >= 1500) level = 1;
 
     let user: any = await User.findOne({
       where: { id: transaction.sender_id },
     });
 
     user.level = level;
-    if (totalAmount >= 700) {
-      user.status = "Active"; // Update user status to "Active" if total amount is 700 or more
+    if (totalAmount >= 1400) {
+      user.status = "Active";
     }
     await user.save();
 
@@ -145,7 +145,7 @@ export const TransactionComplete = async (req, res) => {
       const rs300: any = await GiveHelp.findOne({
         where: {
           sender_id: transaction.sender_id,
-          amount: 300.0,
+          amount: 600.0,
           status: "Completed",
         },
       });
@@ -169,17 +169,17 @@ export const TransactionComplete = async (req, res) => {
           level === 2
             ? 2000
             : level === 3
-              ? 4000
+              ? 3000
               : level === 4
-                ? 8000
+                ? 5000
                 : level === 5
-                  ? 15000
+                  ? 10000
                   : level === 6
-                    ? 20000
+                    ? 15000
                     : level === 7
-                      ? 30000
+                      ? 20000
                       : level === 8
-                        ? 50000
+                        ? 25000
                         : 0,
           level,
         );

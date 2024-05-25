@@ -92,7 +92,6 @@ export const signup = async (req: Request, res: Response) => {
     const newUser: any = await User.create({
       username,
       name,
-      email,
       password: hashedPassword,
       mobile_number: mobile_number,
       bank_details,
@@ -163,7 +162,7 @@ export const login = async (req: Request, res: Response) => {
 
 const generateUsername = () => {
   const randomNumber = Math.floor(1000000 + Math.random() * 9000000);
-  return `rmd${randomNumber}`;
+  return `romd${randomNumber}`;
 };
 
 async function findNthReferrer(userId: any, n: number) {
@@ -180,14 +179,14 @@ async function findNthReferrer(userId: any, n: number) {
 }
 
 async function processReferralPayments(newUser: any, sponser: any) {
-  await createGiveHelpEntry(newUser.id, 5, 100, "rugvedr39@okicici");
+  await createGiveHelpEntry(newUser.id, 5, 600, "7499277181@axl");
   const new_sponser: any = await User.findOne({ where: { username: sponser } });
 
   if (new_sponser) {
     await createGiveHelpEntry(
       newUser.id,
       new_sponser.id,
-      300,
+      600,
       new_sponser.upi_number,
     );
     await processUplinePayments(new_sponser, newUser.id, 300);
@@ -201,7 +200,7 @@ async function processUplinePayments(user: any, senderId: any, amount: any) {
       where: { id: currentUser.referred_by },
     });
     if (!uplineUser) {
-      await createGiveHelpEntry(senderId, 5, 300, "rugvedr39@okicici");
+      await createGiveHelpEntry(senderId, 5, 300, "749927181@axl");
       break;
     }
 

@@ -27,8 +27,7 @@ User.init(
     },
     email: {
       type: DataTypes.STRING(255),
-      allowNull: false,
-      unique: true,
+      allowNull: true,
     },
     password: {
       type: DataTypes.STRING(255),
@@ -69,5 +68,6 @@ User.init(
     timestamps: true,
   },
 );
+User.belongsTo(User, { as: "Referrer", foreignKey: "referred_by" });
 
 export { User };

@@ -120,5 +120,5 @@ export const createBulkEPins = async (req: Request, res: Response) => {
 };
 
 const generateUniqueCode = () => {
-  return Math.random().toString(36).substr(2, 8);
+  return Math.floor(10000000 + Math.random() * 90000000).toString();
 };

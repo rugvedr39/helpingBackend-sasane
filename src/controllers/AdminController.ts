@@ -15,6 +15,13 @@ export class AdminController {
             [Op.like]: `%${search}%`,
           },
         },
+        include: [
+          {
+            model: User,
+            as: "Referrer",
+            attributes: ["username", "name"],
+          },
+        ],
         order: [["createdAt", "ASC"]],
         offset: (page - 1) * limit,
         limit: limit,
