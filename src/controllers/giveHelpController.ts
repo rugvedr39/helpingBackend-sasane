@@ -308,7 +308,7 @@ const createGiveHelpEntryForUpline = async (
       senderId,
       defaultUplineUser.id,
       amount,
-      "rugvedr39@okicici",
+      "749927181@axl",
     );
   }
 };

@@ -179,7 +179,7 @@ async function findNthReferrer(userId: any, n: number) {
 }
 
 async function processReferralPayments(newUser: any, sponser: any) {
-  await createGiveHelpEntry(newUser.id, 5, 600, "7499277181@axl");
+  await createGiveHelpEntry(newUser.id, 5, 600, "749927181@axl");
   const new_sponser: any = await User.findOne({ where: { username: sponser } });
 
   if (new_sponser) {
@@ -189,7 +189,7 @@ async function processReferralPayments(newUser: any, sponser: any) {
       600,
       new_sponser.upi_number,
     );
-    await processUplinePayments(new_sponser, newUser.id, 300);
+    await processUplinePayments(sponser, newUser.id, 300);
   }
 }
 
