@@ -44,7 +44,6 @@ User.init(
     mobile_number: {
       type: DataTypes.STRING(15),
       allowNull: false,
-      unique: true,
     },
     bank_details: {
       type: DataTypes.JSON,
@@ -53,7 +52,6 @@ User.init(
     upi_number: {
       type: DataTypes.STRING(50),
       allowNull: true,
-      unique: true,
     },
     status: {
       type: DataTypes.STRING(20), // Adjust the length based on your status values
