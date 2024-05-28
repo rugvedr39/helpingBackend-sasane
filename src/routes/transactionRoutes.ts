@@ -25,7 +25,7 @@ router.get("/top-receivers", async (req, res) => {
     const topReceivers = await GiveHelp.findAll({
       where: {
         status: "Completed",
-        reciver_id: {
+        receiver_id: {
           [Op.notIn]: excludedIds,
         },
       },
