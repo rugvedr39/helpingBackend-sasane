@@ -27,7 +27,7 @@ router.get("/top-receivers", async (req, res) => {
         status: "Completed",
         reciver_id: {
           receiver_id: {
-            [Op.ne]: excludedIds,
+            [Op.notIn]: excludedIds,
           },
         },
       },
