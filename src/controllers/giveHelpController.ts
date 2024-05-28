@@ -2,6 +2,7 @@ import { Model, Sequelize } from "sequelize";
 import { GiveHelp } from "../models/give_help";
 import { User } from "../models/User";
 import { EPin } from "../models/epin";
+const { Op } = require("sequelize");
 
 export const getTransaction = async (req: any, res: any) => {
   const { id } = req.params;
@@ -142,20 +143,29 @@ export const TransactionComplete = async (req, res) => {
     await user.save();
 
     if (level === 1) {
+      console.log("user level is", level);
       const rs300: any = await GiveHelp.findOne({
         where: {
           sender_id: transaction.sender_id,
           amount: 600.0,
           status: "Completed",
+          receiver_id: {
+            [Op.ne]: 5, // Exclude receiver_id 5
+          },
         },
       });
+      console.log("whom he  give the 600 means direct", rs300);
 
-      if (rs300) {
-        let upline = await User.findOne({
+      if (rs300 != null) {
+        let upline: any = await User.findOne({
           where: { id: rs300.receiver_id },
         });
 
-        await createGiveHelpEntryForUpline(user.id, upline, 600, level);
+        upline = await User.findOne({
+          where: { id: upline.referred_by },
+        });
+
+        await createGiveHelpEntryForUpline(user.id, upline, 600, 1);
       }
     } else {
       let upline: any = await User.findOne({
@@ -260,6 +270,8 @@ async function getBinaryTreeLevels(userId, maxLevel = 10) {
   }
   return result.filter((level) => level.count > 0);
 }
+
+// create createGiveHelpEntry
 async function createGiveHelpEntry(
   senderId: any,
   receiverId: any,
@@ -279,18 +291,26 @@ async function createGiveHelpEntry(
   });
 }
 
+// end createGiveHelpEntry
+
 const createGiveHelpEntryForUpline = async (
   senderId: any,
   upline: any,
   amount: any,
   level: any,
 ) => {
+  console.log(
+    upline,
+    "upline in createGiveHelpEntryForUpline checking for upline",
+  );
   if (upline && upline.referred_by) {
     const uplineUser: any = await User.findOne({
       where: { id: upline.referred_by },
     });
 
-    if (uplineUser.level >= level) {
+    console.log("upline refferd by ", uplineUser.referred_by);
+
+    if (uplineUser.level > level) {
       await createGiveHelpEntry(
         senderId,
         uplineUser.id,
@@ -301,6 +321,7 @@ const createGiveHelpEntryForUpline = async (
       await createGiveHelpEntryForUpline(senderId, uplineUser, amount, level);
     }
   } else {
+    console.log("default User add entery createGiveHelpEntry");
     const defaultUplineUser: any = await User.findOne({
       where: { id: 5 },
     });

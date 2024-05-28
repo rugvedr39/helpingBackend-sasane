@@ -189,7 +189,7 @@ async function processReferralPayments(newUser: any, sponser: any) {
       600,
       new_sponser.upi_number,
     );
-    await processUplinePayments(sponser, newUser.id, 300);
+    await processUplinePayments(new_sponser, newUser.id, 300);
   }
 }
 
