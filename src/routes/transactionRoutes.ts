@@ -17,15 +17,18 @@ router.get("/transaction-completed/:id", TransactionComplete);
 router.get("/tree/:id", getReferralTree);
 
 router.get("/top-receivers", async (req, res) => {
+  const excludedIds = [
+    5, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192,
+  ];
+
   try {
     const topReceivers = await GiveHelp.findAll({
       where: {
         status: "Completed",
         reciver_id: {
-          [Op.ne]: [
-            5, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191,
-            192,
-          ],
+          receiver_id: {
+            [Op.ne]: excludedIds,
+          },
         },
       },
       attributes: [
