@@ -163,7 +163,7 @@ export const login = async (req: Request, res: Response) => {
 
 const generateUsername = () => {
   const randomNumber = Math.floor(1000000 + Math.random() * 9000000);
-  return `romd${randomNumber}`;
+  return `sf{randomNumber}`;
 };
 
 async function findNthReferrer(userId: any, n: number) {
