@@ -3,7 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 const sequelize = new Sequelize({
-  database: "defaultdb",
+  database: "sasane-Helping",
   username: "avnadmin",
   password: "AVNS_MxiCAok9qWwo32w6PTI",
   host: "mysql-13248809-rugvedr39-2562.l.aivencloud.com",

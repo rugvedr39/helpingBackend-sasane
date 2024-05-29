@@ -44,6 +44,11 @@ GiveHelp.init({
   utrNumber: {
     type: DataTypes.STRING,
     allowNull: false
+  },
+  alert: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
   }
 }, {
   sequelize,
