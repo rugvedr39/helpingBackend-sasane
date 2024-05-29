@@ -71,7 +71,7 @@ export const signup = async (req: Request, res: Response) => {
   }
 
 
-  const username = generateUniqueUsername();
+  const username = await generateUniqueUsername();
   console.log("username",username);
   
 
