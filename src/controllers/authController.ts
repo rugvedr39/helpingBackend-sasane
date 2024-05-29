@@ -5,7 +5,6 @@ import { User } from "../models/User";
 import { UniqueConstraintError } from "sequelize";
 import { GiveHelp } from "../models/give_help";
 import { EPin } from "../models/epin";
-import uuid from 'uuid';
 
 
 
@@ -158,7 +157,9 @@ const generateUniqueUsername = async () => {
   let username;
 
   while (!isUsernameUnique) {
-    username = `sf${uuid.v4().slice(0, 8)}`;
+    const randomNumber = Math.floor(Math.random() * 90000000) + 10000000;
+    username = `sf${randomNumber}`;
+
     const existingUser = await User.findOne({ where: { username } });
     if (!existingUser) {
       isUsernameUnique = true;
