@@ -5,6 +5,9 @@ import { User } from "../models/User";
 import { UniqueConstraintError } from "sequelize";
 import { GiveHelp } from "../models/give_help";
 import { EPin } from "../models/epin";
+import uuid from 'uuid';
+
+
 
 const findAvailableSponsor = async (
   referralCode: string,
@@ -69,21 +72,13 @@ export const signup = async (req: Request, res: Response) => {
   }
 
 
-  let username = "";
-  let isUsernameUnique = false;
-  while (!isUsernameUnique) {
-    username = generateUsername();
-    const existingUser:any = await User.findOne({ where: { username } });
-    if (!existingUser) {
-      isUsernameUnique = true;
-    }
-  }
+  const username = generateUniqueUsername();
 
   const date = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
   const time = new Date().toTimeString().slice(0, 8); // HH:MM:SS
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = password;
     const sponsorUser: any = await findAvailableSponsor(referral_code);
 
     if (!sponsorUser) {
@@ -147,13 +142,10 @@ export const login = async (req: Request, res: Response) => {
     if (!user) {
       return res.status(200).json({ message: "User not found" });
     }
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
+    if(password!=user.password){
       return res.status(200).json({ message: "Invalid credentials" });
     }
     const token = jwt.sign({ userId: user.id }, "your_secret_key");
-
-  
     res.status(200).json({ token, user });
   } catch (error) {
     console.error("Error logging in:", error);
@@ -161,10 +153,21 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-const generateUsername = () => {
-  const randomNumber = Math.floor(1000000 + Math.random() * 9000000);
-  return `sf${randomNumber}`;
+const generateUniqueUsername = async () => {
+  let isUsernameUnique = false;
+  let username;
+
+  while (!isUsernameUnique) {
+    username = `sf${uuid.v4().slice(0, 8)}`;
+    const existingUser = await User.findOne({ where: { username } });
+    if (!existingUser) {
+      isUsernameUnique = true;
+    }
+  }
+
+  return username;
 };
+
 
 async function findNthReferrer(userId: any, n: number) {
   n = n + 1;
@@ -245,3 +248,7 @@ async function createGiveHelpEntry(
     alert: alertt,
   });
 }
+function uuidv4() {
+  throw new Error("Function not implemented.");
+}
+
