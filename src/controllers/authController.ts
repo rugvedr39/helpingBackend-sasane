@@ -72,6 +72,8 @@ export const signup = async (req: Request, res: Response) => {
 
 
   const username = generateUniqueUsername();
+  console.log("username",username);
+  
 
   const date = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
   const time = new Date().toTimeString().slice(0, 8); // HH:MM:SS
@@ -98,7 +100,7 @@ export const signup = async (req: Request, res: Response) => {
     }
 
     const newUser: any = await User.create({
-      username,
+      username:username,
       name,
       password: hashedPassword,
       mobile_number: mobile_number,
