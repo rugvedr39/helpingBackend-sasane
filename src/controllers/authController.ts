@@ -154,7 +154,7 @@ export const login = async (req: Request, res: Response) => {
 
 const generateUniqueUsername = async () => {
   let isUsernameUnique = false;
-  let username;
+  let username:string = "";
 
   while (!isUsernameUnique) {
     const randomNumber = Math.floor(Math.random() * 90000000) + 10000000;
