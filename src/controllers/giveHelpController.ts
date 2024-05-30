@@ -258,7 +258,8 @@ async function createGiveHelpEntry(
   receiverId: any,
   amount: any,
   upi: any,
-  alert:boolean
+  alert:boolean,
+  priority:number
 ) {
   console.log("in the createGiveHelpEntry");
   await GiveHelp.create({
@@ -270,7 +271,8 @@ async function createGiveHelpEntry(
     time: new Date().toTimeString().slice(0, 8),
     upiId: upi,
     utrNumber: "",
-    alert: alert
+    alert: alert,
+    priority: priority
   });
 }
 
@@ -279,6 +281,7 @@ const createGiveHelpEntryForUpline = async (
   upline: any,
   amount: number,
   level: number,
+  priority=1
 ) => {
   try {
     console.log(upline, "upline in createGiveHelpEntryForUpline checking for upline");
@@ -291,13 +294,13 @@ const createGiveHelpEntryForUpline = async (
       }
 
       console.log("upline referred by", uplineUser.referred_by);
-
-      if (uplineUser.level > level) {
-        await createGiveHelpEntry(senderId, uplineUser.id, amount, uplineUser.upi_number, false);
-      } else {
-        await createGiveHelpEntry(senderId, uplineUser.id, amount, uplineUser.upi_number, true);
-        await createGiveHelpEntryForUpline(senderId, uplineUser, amount, level);
-      }
+        if (uplineUser.level > level) {
+          await createGiveHelpEntry(senderId, uplineUser.id, amount, uplineUser.upi_number, false, priority);
+        } else {
+          await createGiveHelpEntry(senderId, uplineUser.id, amount, uplineUser.upi_number, true, priority);
+          // Pass the incremented priority for the next recursive call
+          await createGiveHelpEntryForUpline(senderId, uplineUser, amount, level, priority + 1);
+        }
     } else {
       console.log("default User add entry createGiveHelpEntry");
       const defaultUplineUser: any | null = await User.findOne({ where: { id: 5 } });
@@ -306,7 +309,7 @@ const createGiveHelpEntryForUpline = async (
         throw new Error(`Default upline user with ID 5 not found`);
       }
 
-      await createGiveHelpEntry(senderId, defaultUplineUser.id, amount, "8600988002@axl", false);
+      await createGiveHelpEntry(senderId, defaultUplineUser.id, amount, "7558395974@ybl", false,null);
     }
   } catch (error) {
     console.error("Error in createGiveHelpEntryForUpline:", error);

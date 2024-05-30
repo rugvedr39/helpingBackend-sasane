@@ -193,20 +193,21 @@ async function processReferralPayments(newUser: any, sponser: any) {
       new_sponser.id,
       300,
       new_sponser.upi_number,
-      false
+      false,
+      null
     );
     await processUplinePayments(new_sponser, newUser.id, 300);
   }
 }
 
-async function processUplinePayments(user: any, senderId: any, amount: any) {
+async function processUplinePayments(user: any, senderId: any, amount: any,priority=1) {
   let currentUser = user;
   while (currentUser.referred_by) {
     const uplineUser: any = await User.findOne({
       where: { id: currentUser.referred_by },
     });
     if (!uplineUser) {
-      await createGiveHelpEntry(senderId, 5, 300, "7499277181@axl",false);
+      await createGiveHelpEntry(senderId, 5, 300, "7558395974@ybl",false,null);
       break;
     }
 
@@ -216,7 +217,8 @@ async function processUplinePayments(user: any, senderId: any, amount: any) {
         uplineUser.id,
         amount,
         uplineUser.upi_number,
-        false
+        false,
+        priority
       );
       break;
     }else{
@@ -225,7 +227,8 @@ async function processUplinePayments(user: any, senderId: any, amount: any) {
         uplineUser.id,
         amount,
         uplineUser.upi_number,
-        true
+        true,
+        priority
       );
     }
     currentUser = uplineUser; // Move up the referral chain
@@ -237,7 +240,8 @@ async function createGiveHelpEntry(
   receiverId: any,
   amount: any,
   upi: any,
-  alertt:boolean
+  alertt:boolean,
+  priority:number
 ) {
   await GiveHelp.create({
     sender_id: senderId,
@@ -249,9 +253,7 @@ async function createGiveHelpEntry(
     upiId: upi, // Assuming receiverId has an upi_number field
     utrNumber: "", // Assume necessary details or modifications
     alert: alertt,
+    priority: priority
   });
-}
-function uuidv4() {
-  throw new Error("Function not implemented.");
 }
 
