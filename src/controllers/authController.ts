@@ -91,7 +91,7 @@ export const signup = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Epin is required." });
       
     }else{
-      const epinExist = await EPin.findOne({
+      let epinExist = await EPin.findOne({
         where: { code: epin, status: "unused" }
       });
       if(!epinExist){

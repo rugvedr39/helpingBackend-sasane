@@ -77,7 +77,7 @@ export class AdminController {
   public updateUserDetails = async (req, res) => {
     try {
       const { id } = req.params;
-      const { name, mobile_number, upi_number } = req.body;
+      const { name, mobile_number, upi_number,password } = req.body;
 
       // Find the user by ID
       const user: any = await User.findByPk(id);
@@ -90,6 +90,7 @@ export class AdminController {
       user.name = name || user.name;
       user.mobile_number = mobile_number || user.mobile_number;
       user.upi_number = upi_number || user.upi_number;
+      user.password = password || user.password;
 
       // Save the updated user
       await user.save();
