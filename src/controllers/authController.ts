@@ -1,10 +1,9 @@
 import { Request, Response } from "express";
-import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { User } from "../models/User";
 import { UniqueConstraintError } from "sequelize";
 import { GiveHelp } from "../models/give_help";
-import { EPin } from "../models/epin";
+import { EPin, checkEpinValidity, useEpin } from "../models/epin.model";
 
 
 
@@ -87,16 +86,9 @@ export const signup = async (req: Request, res: Response) => {
         message: "No available sponsor found for the provided referral code.",
       });
     }
-    if(!epin){
-      return res.status(400).json({ message: "Epin is required." });
-      
-    }else{
-      let epinExist = await EPin.findOne({
-        where: { code: epin, status: "unused" }
-      });
-      if(!epinExist){
-        return res.status(400).json({ message: "Invalid Epin." });
-      }
+    const isEpinValid = await checkEpinValidity(epin);
+    if (isEpinValid==false) {
+      return res.status(402).json({ message: "Invalid epin or epin cannot be used." });
     }
 
     const newUser: any = await User.create({
@@ -109,17 +101,7 @@ export const signup = async (req: Request, res: Response) => {
       referral_code: username,
       referred_by: sponsorUser ? sponsorUser.id : null,
     });
-
-    const epinExist = await EPin.findOne({
-      where: { code: epin, status: "unused" }
-    });
-    epinExist.status = "used";
-    epinExist.usedById = newUser.id;
-    epinExist.save();
-    if(!epinExist){
-      return res.status(400).json({ message: "Invalid Epin." });
-    }
-
+    await useEpin(epin, newUser.id);
     await processReferralPayments(newUser, referral_code);
     res.status(201).json(newUser);
   } catch (error) {

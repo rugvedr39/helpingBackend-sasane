@@ -1,7 +1,6 @@
 import { Model, Sequelize } from "sequelize";
 import { GiveHelp } from "../models/give_help";
 import { User } from "../models/User";
-import { EPin } from "../models/epin";
 const { Op } = require("sequelize");
 
 export const getTransaction = async (req: any, res: any) => {

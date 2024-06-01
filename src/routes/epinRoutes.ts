@@ -1,17 +1,17 @@
 import express from "express";
 import {
-  createBulkEPins,
+  createBulkEPin,
   transferEPin,
-  getTransferredEPinReport,
-  getUnusedEPinReport,
-  getUsedEPinReportByUser,
+  getUserUnusedEPins,
+  getUserUsedEPins,
+  getEPinTransferReport
 } from "../controllers/epin.controller";
 
 const router = express.Router();
-router.post("/createEpin", createBulkEPins);
+router.post("/createEpin", createBulkEPin);
 router.post("/TransferEpin", transferEPin);
-router.post("/TransferEpinReport", getTransferredEPinReport);
-router.get("/getUnusedEPinReport/:id", getUnusedEPinReport);
-router.get("/getUsedEPinReportByUser/:id", getUsedEPinReportByUser);
+router.post("/TransferEpinReport", getEPinTransferReport);
+router.get("/getUnusedEPinReport/:id", getUserUnusedEPins);
+router.get("/getUsedEPinReportByUser/:id", getUserUsedEPins);
 
 export default router;
