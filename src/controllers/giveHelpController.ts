@@ -146,9 +146,39 @@ export const TransactionComplete = async (req, res) => {
           where: { id: upline.referred_by },
         });
 
-        await createGiveHelpEntryForUpline(user.id, upline, 600, 1);
+        await createGiveHelpEntryForUpline(user.id, upline, 600, 2);
       }
     } else {
+      console.log("in else block of alertEntries");
+      
+      const alertEntries:any = await GiveHelp.findAll({
+        where: {
+          receiver_id: transaction.sender_id,
+          status: 'initiate',
+          alert: true,
+          amount:transaction.amount
+        }
+      });
+  
+      for (let entry of alertEntries) {
+        entry.alert = false;
+        entry.priority = null;
+        await entry.save();
+        const uplineEntries = await GiveHelp.findAll({
+          where: {
+            id:{
+              [Op.ne]: entry.id,
+            },
+            sender_id: entry.sender_id,
+            status: 'initiate',
+            amount:transaction.amount,
+            priorty:!null
+          }
+        });
+        for (const entry of uplineEntries) {
+          await entry.destroy();
+        }
+      }
       let upline: any = await User.findOne({
         where: { id: transaction.receiver_id },
       });
@@ -281,35 +311,27 @@ const createGiveHelpEntryForUpline = async (
   upline: any,
   amount: number,
   level: number,
-  priority=1
+  priority=0
 ) => {
   try {
-    console.log(upline, "upline in createGiveHelpEntryForUpline checking for upline");
-    
     if (upline && upline.referred_by) {
       const uplineUser: any | null = await User.findOne({ where: { id: upline.referred_by } });
-
       if (!uplineUser) {
         throw new Error(`Upline user with ID ${upline.referred_by} not found`);
       }
-
-      console.log("upline referred by", uplineUser.referred_by);
         if (uplineUser.level > level) {
           await createGiveHelpEntry(senderId, uplineUser.id, amount, uplineUser.upi_number, false, priority);
         } else {
+          console.log("called the else block");
           await createGiveHelpEntry(senderId, uplineUser.id, amount, uplineUser.upi_number, true, priority);
-          // Pass the incremented priority for the next recursive call
           await createGiveHelpEntryForUpline(senderId, uplineUser, amount, level, priority + 1);
         }
     } else {
-      console.log("default User add entry createGiveHelpEntry");
       const defaultUplineUser: any | null = await User.findOne({ where: { id: 5 } });
-
       if (!defaultUplineUser) {
         throw new Error(`Default upline user with ID 5 not found`);
       }
-
-      await createGiveHelpEntry(senderId, defaultUplineUser.id, amount, "7558395974@ybl", false,null);
+      await createGiveHelpEntry(senderId, defaultUplineUser.id, amount, "7558395974@ybl", false,1);
     }
   } catch (error) {
     console.error("Error in createGiveHelpEntryForUpline:", error);
