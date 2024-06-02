@@ -15,14 +15,26 @@ TransferHistory.init(
     ePinId: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
+      references: {
+        model: EPin,
+        key: "id",
+      }
     },
     transferredById: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
+      references: {
+        model: User,
+        key: "id",
+      }
     },
     transferredToId: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
+      references: {
+        model: User,
+        key: "id",
+      }
     },
     transferredAt: {
       type: DataTypes.DATE,
@@ -37,11 +49,8 @@ TransferHistory.init(
   }
 );
 
-User.hasMany(TransferHistory, { foreignKey: "transferredById", as: "TransfersMade" });
-User.hasMany(TransferHistory, { foreignKey: "transferredToId", as: "TransfersReceived" });
-EPin.hasMany(TransferHistory, { foreignKey: "ePinId" });
-TransferHistory.belongsTo(User, { as: "transferredBy", foreignKey: "transferredById" });
+TransferHistory.belongsTo(User, { as: "TransferredBy", foreignKey: "transferredById" });
 TransferHistory.belongsTo(User, { as: "transferredTo", foreignKey: "transferredToId" });
-TransferHistory.belongsTo(EPin, { foreignKey: "ePinId" });
+TransferHistory.belongsTo(EPin, { as: "EPin", foreignKey: "ePinId" });
 
 export { TransferHistory };

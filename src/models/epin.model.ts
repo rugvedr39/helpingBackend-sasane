@@ -15,7 +15,6 @@ EPin.init(
     userId: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
-      
     },
     code: {
       type: DataTypes.STRING(20),
@@ -30,12 +29,10 @@ EPin.init(
     usedById: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: true,
-      
     },
     transferredById: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: true,
-     
     },
   },
   {
@@ -45,17 +42,12 @@ EPin.init(
   }
 );
 
-// Define associations
-// User.hasMany(EPin, { foreignKey: "userId" });
-// EPin.belongsTo(User, { as: "user", foreignKey: "userId" });
+EPin.belongsTo(User, { foreignKey: "userId" }); // Add this line
+EPin.belongsTo(User, { as: "UsedBy", foreignKey: "usedById" });
+EPin.belongsTo(User, { as: "TransferredBy", foreignKey: "transferredById" });
 
-// User.hasMany(EPin, { foreignKey: "usedById" });
-// EPin.belongsTo(User, { as: "usedBy", foreignKey: "usedById" });
 
-// User.hasMany(EPin, { foreignKey: "transferredById" });
-// EPin.belongsTo(User, { as: "transferredBy", foreignKey: "transferredById" });
 
-// EPin.hasMany(TransferHistory, { foreignKey: "ePinId" });
 
 const checkEpinValidity = async (epinCode: string): Promise<boolean> => {
   const epin = await EPin.findOne({ where: { code: epinCode, status: ["unused", "transferred"] } });

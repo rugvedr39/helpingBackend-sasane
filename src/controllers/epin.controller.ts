@@ -157,8 +157,8 @@ export const getUserUsedEPins = async (req: Request, res: Response) => {
       include: [
         {
           model: User,
-          as: "usedBy",
-          attributes: ["id", "username", "name"], // Include only necessary fields
+          as: "UsedBy",
+          attributes: ["id", "username", "name"],
         },
       ],
     });
@@ -191,11 +191,17 @@ export const getEPinTransferReport = async (req: Request, res: Response) => {
       include: [
         {
           model: EPin,
+          as: "EPin",
           attributes: ["id", "code", "status"],
         },
         {
           model: User,
           as: "transferredTo",
+          attributes: ["id", "username", "name"],
+        },
+        {
+          model: User,
+          as: "TransferredBy",
           attributes: ["id", "username", "name"],
         },
       ],

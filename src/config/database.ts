@@ -2,6 +2,7 @@ import { Sequelize } from "sequelize";
 import * as fs from "fs";
 import * as path from "path";
 
+
 const sequelize = new Sequelize({
   database: "sasane-Helping",
   username: "avnadmin",

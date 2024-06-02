@@ -1,6 +1,8 @@
 import { Model, DataTypes } from "sequelize";
 import { sequelize } from "../config/database";
 import { GiveHelp } from "./give_help";
+import { EPin } from "./epin.model";
+import { TransferHistory } from "./transferHistory.model";
 
 class User extends Model {}
 
@@ -66,6 +68,5 @@ User.init(
     timestamps: true,
   },
 );
-User.belongsTo(User, { as: "Referrer", foreignKey: "referred_by" });
 
 export { User };

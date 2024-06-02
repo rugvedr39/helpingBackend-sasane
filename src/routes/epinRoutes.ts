@@ -10,7 +10,7 @@ import {
 const router = express.Router();
 router.post("/createEpin", createBulkEPin);
 router.post("/TransferEpin", transferEPin);
-router.post("/TransferEpinReport", getEPinTransferReport);
+router.post("/TransferEpinReport/:userId", getEPinTransferReport);
 router.get("/getUnusedEPinReport/:id", getUserUnusedEPins);
 router.get("/getUsedEPinReportByUser/:id", getUserUsedEPins);
 
