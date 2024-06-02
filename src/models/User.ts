@@ -69,4 +69,7 @@ User.init(
   },
 );
 
+User.belongsTo(User, { as: "Referrer", foreignKey: "referred_by" });
+
+
 export { User };

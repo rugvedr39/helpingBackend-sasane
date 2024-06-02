@@ -49,8 +49,7 @@ TransferHistory.init(
   }
 );
 
-TransferHistory.belongsTo(User, { as: "TransferredBy", foreignKey: "transferredById" });
-TransferHistory.belongsTo(User, { as: "transferredTo", foreignKey: "transferredToId" });
-TransferHistory.belongsTo(EPin, { as: "EPin", foreignKey: "ePinId" });
+TransferHistory.belongsTo(User, { as: "TransferredByUser", foreignKey: "transferredById" });
+TransferHistory.belongsTo(User, { as: "TransferredToUser", foreignKey: "transferredToId" });
 
 export { TransferHistory };

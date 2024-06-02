@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import { User } from "../models/User";
 import { Op } from "sequelize";
+import { EPin } from "../models/epin.model";
+import { TransferHistory } from "../models/transferHistory.model";
+import sequelize from "sequelize";
 
 export class AdminController {
   public async listUsers(req: Request, res: Response) {
@@ -99,6 +102,162 @@ export class AdminController {
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Server error" });
+    }
+  };
+
+  public getEPinHistoryWithPagination = async (req: Request, res: Response) => {
+    const { page = 1, pageSize = 10, search = "" } = req.query;
+
+    const offset =
+      (parseInt(page as string) - 1) * parseInt(pageSize as string);
+
+    try {
+      let whereClause = {};
+      let includeClause: any = [
+        { model: User, as: "UsedBy" },
+        { model: User, as: "TransferredBy" },
+        {
+          model: TransferHistory,
+          as: "TransferHistory",
+          include: [
+            { model: User, as: "TransferredByUser" },
+            { model: User, as: "TransferredToUser" },
+          ],
+        },
+      ];
+
+      if (typeof search === "string" && search.length > 0) {
+        if (search.startsWith("sf")) {
+          includeClause.unshift({
+            model: User,
+            as: "User",
+            where: {
+              username: {
+                [Op.like]: `%${search.substring(2)}%`,
+              },
+            },
+          });
+        } else {
+          whereClause = {
+            code: {
+              [Op.like]: `%${search}%`,
+            },
+          };
+          includeClause.unshift({ model: User, as: "User" });
+        }
+      } else {
+        includeClause.unshift({ model: User, as: "User" });
+      }
+
+      console.log("whereClause", whereClause);
+      
+
+      const epins: any = await EPin.findAndCountAll({
+        where: whereClause,
+        offset,
+        limit: parseInt(pageSize as string),
+        order: [["createdAt", "DESC"]], // Add sorting here
+        include: includeClause,
+      });
+
+      const epinHistory = epins.rows.map((epin) => {
+        const createdBy = epin.User ? epin.User.get() : null;
+        const usedBy = epin.UsedBy ? epin.UsedBy.get() : null;
+        const transferredBy = epin.TransferredBy
+          ? epin.TransferredBy.get()
+          : null;
+        const transferHistory = epin.TransferHistory.map((history) => ({
+          transferredBy: history.TransferredByUser
+            ? history.TransferredByUser.get()
+            : null,
+          transferredTo: history.TransferredToUser
+            ? history.TransferredToUser.get()
+            : null,
+          transferredAt: history.transferredAt,
+        }));
+
+        let creator;
+        if (transferHistory.length > 0) {
+          creator = transferHistory[0].transferredBy;
+        } else {
+          creator = createdBy;
+        }
+
+        return {
+          ePinCode: epin.code,
+          createdAt: epin.createdAt,
+          creator,
+          usedBy,
+          transferredBy,
+          transferHistory,
+        };
+      });
+
+      const totalPages = Math.ceil(epins.count / parseInt(pageSize as string));
+
+      res.json({
+        data: epinHistory,
+        currentPage: parseInt(page as string),
+        totalPages,
+        totalItems: epins.count,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  };
+
+  public getEPinCounts = async (req: Request, res: Response) => {
+    try {
+      const { date } = req.query;
+  
+      let whereClause = {};
+      if (date && typeof date === 'string') {
+        const parsedDate = new Date(date);
+        if (!isNaN(parsedDate.getTime())) {
+          whereClause = {
+            createdAt: {
+              [Op.gte]: new Date(parsedDate.setHours(0, 0, 0, 0)),
+              [Op.lt]: new Date(parsedDate.setHours(23, 59, 59, 999))
+            }
+          };
+        } else {
+          return res.status(400).json({ error: 'Invalid date format' });
+        }
+      }
+  
+      const totalEPins = await EPin.count();
+      const usedEPins = await EPin.count({ where: { status: "used" } });
+  
+      let dateFilteredCounts = [];
+      if (Object.keys(whereClause).length > 0) {
+        dateFilteredCounts = await EPin.findAll({
+          where: whereClause,
+          attributes: [
+            [sequelize.fn("COUNT", sequelize.col("id")), "count"],
+          ],
+        });
+      }
+  
+      const createdEPinsByDate = await EPin.findAll({
+        where: whereClause,
+        attributes: [
+          [sequelize.fn("DATE", sequelize.col("createdAt")), "date"],
+          [sequelize.fn("COUNT", sequelize.col("id")), "count"],
+        ],
+        group: ["date"],
+        order: [["date", "DESC"]],
+      });
+  
+      res.json({
+        totalEPins,
+        usedEPins,
+        createdEPinsByDate,
+        dateFilteredCounts: dateFilteredCounts.length > 0 ? dateFilteredCounts[0].dataValues.count : 0,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal server error" });
     }
   };
 }

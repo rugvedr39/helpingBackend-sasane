@@ -46,6 +46,7 @@ EPin.belongsTo(User, { foreignKey: "userId" }); // Add this line
 EPin.belongsTo(User, { as: "UsedBy", foreignKey: "usedById" });
 EPin.belongsTo(User, { as: "TransferredBy", foreignKey: "transferredById" });
 
+EPin.hasMany(TransferHistory, { foreignKey: 'ePinId', as: 'TransferHistory' });
 
 
 
