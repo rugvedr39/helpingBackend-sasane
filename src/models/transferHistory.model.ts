@@ -15,10 +15,6 @@ TransferHistory.init(
     ePinId: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
-      references: {
-        model: EPin,
-        key: "id",
-      }
     },
     transferredById: {
       type: DataTypes.INTEGER.UNSIGNED,
