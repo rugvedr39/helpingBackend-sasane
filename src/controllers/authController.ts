@@ -4,6 +4,8 @@ import { User } from "../models/User";
 import { UniqueConstraintError } from "sequelize";
 import { GiveHelp } from "../models/give_help";
 import { EPin, checkEpinValidity, useEpin } from "../models/epin.model";
+import { TeamSize } from "../models/TeamSize";
+import { UserTotals } from "../models/UserTotals";
 
 
 
@@ -237,5 +239,13 @@ async function createGiveHelpEntry(
     alert: alertt,
     priority: priority
   });
+  await UserTotals.create({
+    user_id: senderId,
+    initiated_transactions: 600.00,
+  });
+  const update_user: any = await UserTotals.findOne({ where: { user_id: receiverId } });
+  if (update_user) {
+    update_user.initiated_take = parseFloat(update_user.initiated_take.toString()) + 300.00;
+    await update_user.save();
+  }
 }
-
