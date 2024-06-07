@@ -15,12 +15,12 @@ export const getTransaction = async (req: any, res: any) => {
         {
           model: User,
           as: "Sender",
-          attributes: ["name", "mobile_number"],
+          attributes: ["name", "mobile_number","username"],
         },
         {
           model: User,
           as: "Receiver",
-          attributes: ["name", "mobile_number"],
+          attributes: ["name", "mobile_number","username"],
         },
       ],
     });
@@ -262,7 +262,11 @@ await UserTotals.findOne({ where: { user_id: transaction.receiver_id } }).then(a
       }
     }
 
-    res.status(200).json("done");
+    res.status(200).json({
+      status:200,
+      message: "Transaction completed successfully",
+      transaction,
+    });
   } catch (error) {
     console.error("Failed to update UTR Number:", error);
     res.status(500).send("Error updating UTR Number");
@@ -471,16 +475,16 @@ export const getTotalmemberById = async (req: any, res: any) => {
     }
   })
   let totalmember = 0
-    totalmember += levelwisedata.level1
-    totalmember += levelwisedata.level2
-    totalmember += levelwisedata.level3
-    totalmember += levelwisedata.level4
-    totalmember += levelwisedata.level5
-    totalmember += levelwisedata.level6
-    totalmember += levelwisedata.level7
-    totalmember += levelwisedata.level8
-    totalmember += levelwisedata.level9
-    totalmember += levelwisedata.level10
+    totalmember += levelwisedata?.level1
+    totalmember += levelwisedata?.level2
+    totalmember += levelwisedata?.level3
+    totalmember += levelwisedata?.level4
+    totalmember += levelwisedata?.level5
+    totalmember += levelwisedata?.level6
+    totalmember += levelwisedata?.level7
+    totalmember += levelwisedata?.level8
+    totalmember += levelwisedata?.level9
+    totalmember += levelwisedata?.level10
   res.status(200).json({status:200,data:totalmember})
 }
 

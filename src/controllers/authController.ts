@@ -155,20 +155,6 @@ const generateUniqueUsername = async () => {
   return username;
 };
 
-
-async function findNthReferrer(userId: any, n: number) {
-  n = n + 1;
-  let currentUserId: any = userId;
-  for (let i = 0; i < n; i++) {
-    const user: any = await User.findByPk(currentUserId);
-    if (!user || !user.referred_by) {
-      return null;
-    }
-    currentUserId = user.referred_by;
-  }
-  return currentUserId;
-}
-
 async function processReferralPayments(newUser: any, sponser: any) {
   const new_sponser: any = await User.findOne({ where: { username: sponser } });
   if (new_sponser) {
@@ -211,11 +197,11 @@ async function processUplinePayments(user: any, senderId: any, amount: any,prior
         uplineUser.id,
         amount,
         uplineUser.upi_number,
-        true,
+        false,
         priority
       );
+      break;
     }
-    currentUser = uplineUser; // Move up the referral chain
   }
 }
 
@@ -239,10 +225,16 @@ async function createGiveHelpEntry(
     alert: alertt,
     priority: priority
   });
-  await UserTotals.create({
-    user_id: senderId,
-    initiated_transactions: 600.00,
-  });
+  let user:any = await UserTotals.findOne({ where: { user_id: senderId } });
+  if (user) {
+    user.initiated_transactions = parseInt(user.initiated_transactions) + amount;
+    await user.save();
+  }else{
+    await UserTotals.create({
+      user_id: senderId,
+      initiated_transactions: amount,
+    });
+  }
   const update_user: any = await UserTotals.findOne({ where: { user_id: receiverId } });
   if (update_user) {
     update_user.initiated_take = parseFloat(update_user.initiated_take.toString()) + 300.00;
