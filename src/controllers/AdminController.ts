@@ -147,10 +147,7 @@ export class AdminController {
         }
       } else {
         includeClause.unshift({ model: User, as: "User" });
-      }
-
-      console.log("whereClause", whereClause);
-      
+      }      
 
       const epins: any = await EPin.findAndCountAll({
         where: whereClause,
