@@ -163,7 +163,7 @@ async function processReferralPayments(newUser: any, sponser: any) {
   }
 }
 
-async function processUplinePayments(user: any, senderId: any, amount: any,priority=1) {
+async function processUplinePayments(user: any, senderId: any, amount: any,priority=0) {
   let currentUser = user;
   while (currentUser.referred_by) {
     const uplineUser: any = await User.findOne({
@@ -174,7 +174,11 @@ async function processUplinePayments(user: any, senderId: any, amount: any,prior
       break;
     }
 
-    if (uplineUser.level > 1) {
+    const uplineUserTotals: any = await UserTotals.findOne({ where: { user_id: uplineUser.id } });
+    const totalEarned = uplineUserTotals ? parseFloat(uplineUserTotals.total_received.toString()) : 0;
+    const defaultUser: any = await User.findOne({ where: { id: 5 } });
+
+    if (totalEarned <= 900) {
       await createGiveHelpEntry(
         senderId,
         uplineUser.id,
@@ -185,18 +189,24 @@ async function processUplinePayments(user: any, senderId: any, amount: any,prior
       );
       break;
     }else{
-      await createGiveHelpEntry(
-        senderId,
-        uplineUser.id,
-        amount,
-        uplineUser.upi_number,
-        true,
-        priority
-      );
+      const splitAmountBetweenUsers = async (
+        senderId: number,
+        uplineUser: any,
+        defaultUser: any,
+        amount: number,
+        priority: number
+      ) => {
+        console.log(`Splitting amount: ${amount} between uplineUser: ${uplineUser.id} and defaultUser: ${defaultUser.id}`);
+        
+        await createGiveHelpEntry(senderId, uplineUser.id, amount / 2, uplineUser.upi_number, false, priority);
+        await createGiveHelpEntry(senderId, defaultUser.id, amount / 2, defaultUser.upi_number, false, priority);
+      };
+      await splitAmountBetweenUsers(senderId, uplineUser, defaultUser, amount, priority);
     }
-    currentUser = uplineUser;
   }
 }
+
+
 
 async function createGiveHelpEntry(
   senderId: any,
