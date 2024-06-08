@@ -70,19 +70,12 @@ export const signup = async (req: Request, res: Response) => {
   if (!referral_code) {
     return res.status(400).json({ message: "Referral code is required." });
   }
-
-
   const username = await generateUniqueUsername();
-  console.log("username",username);
-  
-
   const date = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
   const time = new Date().toTimeString().slice(0, 8); // HH:MM:SS
-
   try {
     const hashedPassword = password;
     const sponsorUser: any = await findAvailableSponsor(referral_code);
-
     if (!sponsorUser) {
       return res.status(400).json({
         message: "No available sponsor found for the provided referral code.",
@@ -103,7 +96,7 @@ export const signup = async (req: Request, res: Response) => {
       referral_code: username,
       referred_by: sponsorUser ? sponsorUser.id : null,
     });
-    await useEpin(epin, newUser.id);
+    // await useEpin(epin, newUser.id);
     await processReferralPayments(newUser, referral_code);
     res.status(201).json(newUser);
   } catch (error) {
@@ -197,11 +190,11 @@ async function processUplinePayments(user: any, senderId: any, amount: any,prior
         uplineUser.id,
         amount,
         uplineUser.upi_number,
-        false,
+        true,
         priority
       );
-      break;
     }
+    currentUser = uplineUser;
   }
 }
 

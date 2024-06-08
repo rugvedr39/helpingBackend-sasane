@@ -17,6 +17,15 @@ const sequelize = new Sequelize({
   },
 });
 
+// const sequelize = new Sequelize({
+//   database: "sasane-Helping",
+//   username: "root",
+//   password: "8600988002",
+//   host: "127.0.0.1",
+//   port: 3306,
+//   dialect: "mysql",
+// });
+
 // Test the database connection
 async function testDatabaseConnection(): Promise<void> {
   try {

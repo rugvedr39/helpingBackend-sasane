@@ -182,6 +182,84 @@ await UserTotals.findOne({ where: { user_id: transaction.receiver_id } }).then(a
       user.status = "Active";
     }
     await user.save();
+    if (transaction.priority!=null) {
+      console.log("Transaction priority",transaction.priority);
+      const priortyTransaction: any = await GiveHelp.findAll({
+        where: {
+          sender_id: transaction.sender_id,
+          status:"initiate",
+          priority:{
+            [Op.ne]: null
+          },
+          amount:amount
+        },
+      });
+      if (priortyTransaction.length>0) {
+        for (const entry of priortyTransaction) {
+          await entry.destroy();
+        }
+      }
+
+    }
+
+
+    const handleAlertEntries = async (amountToCheck: number, uplineAmount: number) => {
+      const alertEntries: any = await GiveHelp.findAll({
+        where: {
+          receiver_id: transaction.sender_id,
+          status: 'initiate',
+          alert: true,
+          amount: amountToCheck
+        }
+      });
+    
+      if (alertEntries.length > 0) {
+        for (let entry of alertEntries) {
+          entry.alert = false;
+          entry.priority = null;
+          await entry.save();
+        }
+    
+        const uplineEntries: any = await GiveHelp.findAll({
+          where: {
+            sender_id: alertEntries[0].sender_id,
+            receiver_id: {
+              [Op.ne]: transaction.sender_id,
+            },
+            status: 'initiate',
+            amount: amountToCheck,
+            priority: {
+              [Op.ne]: null,
+            }
+          }
+        });
+    
+        for (const entry of uplineEntries) {
+          await entry.destroy();
+        }
+      }
+    };
+
+    if (amount == 600) {
+      await handleAlertEntries(300, 600);
+    }
+    if (amount == 1500) {
+      await handleAlertEntries(600, 1500);
+    }
+    if (amount == 3000) {
+      await handleAlertEntries(1500, 3000);
+    }
+    if (amount == 4000) {
+      await handleAlertEntries(3000, 4000);
+    }
+    if (amount == 2000) {
+      await handleAlertEntries(3000, 2000);
+    }
+    if (amount == 1000) {
+      await handleAlertEntries(2000, 1000);
+    }
+ 
+
     if (level === 1) {
       console.log("user level is", level);
       const rs300: any = await GiveHelp.findOne({
@@ -194,46 +272,16 @@ await UserTotals.findOne({ where: { user_id: transaction.receiver_id } }).then(a
           },
         },
       });
-
       if (rs300 != null) {
         let upline: any = await User.findOne({
           where: { id: rs300.receiver_id },
         });
-
         upline = await User.findOne({
           where: { id: upline.referred_by },
         });
-
-        await createGiveHelpEntryForUpline(user.id, upline, 600, 2);
+        await createGiveHelpEntryForUpline(user.id, upline, 600);
       }
     } else {
-      const alertEntries:any = await GiveHelp.findAll({
-        where: {
-          receiver_id: transaction.sender_id,
-          status: 'initiate',
-          alert: true,
-          amount:[transaction.amount,600.00,1500.00,3000.00,4000.00,4000.00,3000.00,2000.00,1000.00]
-        }
-      });
-      for (let entry of alertEntries) {
-        entry.alert = false;
-        entry.priority = null;
-        await entry.save();
-        const uplineEntries = await GiveHelp.findAll({
-          where: {
-            id:{
-              [Op.ne]: entry.id,
-            },
-            sender_id: entry.sender_id,
-            status: 'initiate',
-            amount:[transaction.amount,600.00,1500.00,3000.00,4000.00,4000.00,3000.00,2000.00,1000.00],
-            priorty:!null
-          }
-        });
-        for (const entry of uplineEntries) {
-          await entry.destroy();
-        }
-      }
       let upline: any = await User.findOne({
         where: { id: transaction.receiver_id },
       });
@@ -439,33 +487,120 @@ const createGiveHelpEntryForUpline = async (
   senderId: number,
   upline: any,
   amount: number,
-  level: number,
-  priority=0
+  priority = 0
 ) => {
   try {
-    if (upline && upline.referred_by) {
-      const uplineUser: any | null = await User.findOne({ where: { id: upline.referred_by } });
+    console.log(`Entering createGiveHelpEntryForUpline with senderId: ${senderId}, amount: ${amount}, priority: ${priority}`);
+    
+    const defaultUser: any = await User.findOne({ where: { id: 5 } });
+    if (!upline || !defaultUser) {
+      throw new Error(`Default upline user with ID 5 not found`);
+    }
+
+    if (upline.referred_by) {
+      const uplineUser: any = await User.findOne({ where: { id: upline.referred_by } });
       if (!uplineUser) {
         throw new Error(`Upline user with ID ${upline.referred_by} not found`);
       }
-        if (uplineUser.level > level) {
-          await createGiveHelpEntry(senderId, uplineUser.id, amount, uplineUser.upi_number, false, priority);
+
+      const uplineUserTotals: any = await UserTotals.findOne({ where: { user_id: uplineUser.id } });
+      const totalEarned = uplineUserTotals ? parseFloat(uplineUserTotals.total_received.toString()) : 0;
+
+      console.log(`Upline user found: ${uplineUser.id}, totalEarned: ${totalEarned}`);
+
+      const helpGive: any = await GiveHelp.findAll({ where: { sender_id: uplineUser.id, amount: amount, status: "Completed" } });
+      const helpGiveCount = helpGive.length;
+
+      console.log(`HelpGive entries found: ${helpGiveCount}`);
+
+      if (helpGiveCount > 0) {
+        if (amount == 4000) {
+          await processGiveHelpEntry(senderId, uplineUser, defaultUser, amount, priority, totalEarned, helpGiveCount, 21900, 13900);
+        } else if (amount == 3000) {
+          await processGiveHelpEntry(senderId, uplineUser, defaultUser, amount, priority, totalEarned, helpGiveCount, 27900, 9900);
         } else {
-          console.log("called the else block");
-          await createGiveHelpEntry(senderId, uplineUser.id, amount, uplineUser.upi_number, true, priority);
-          await createGiveHelpEntryForUpline(senderId, uplineUser, amount, level, priority + 1);
+          await createGiveHelpEntry(senderId, uplineUser.id, amount, uplineUser.upi_number, false, priority);
         }
-    } else {
-      const defaultUplineUser: any | null = await User.findOne({ where: { id: 5 } });
-      if (!defaultUplineUser) {
-        throw new Error(`Default upline user with ID 5 not found`);
+      } else {
+        console.log(`No helpGive entries found. Processing default give help entry.`);
+        await processDefaultGiveHelpEntry(senderId, uplineUser, defaultUser, amount, priority, totalEarned);
       }
-      await createGiveHelpEntry(senderId, defaultUplineUser.id, amount, "7558395974@ybl", false,1);
+    } else {
+      console.log(`Upline user has no referred_by. Using default user.`);
+      await createGiveHelpEntry(senderId, defaultUser.id, amount, defaultUser.upi_number, false, 1);
     }
   } catch (error) {
     console.error("Error in createGiveHelpEntryForUpline:", error);
   }
 };
+
+const processGiveHelpEntry = async (
+  senderId: number,
+  uplineUser: any,
+  defaultUser: any,
+  amount: number,
+  priority: number,
+  totalEarned: number,
+  helpGiveCount: number,
+  threshold1: number,
+  threshold2: number
+) => {
+  console.log(`Processing give help entry for amount: ${amount}, helpGiveCount: ${helpGiveCount}, totalEarned: ${totalEarned}`);
+  
+  if ((helpGiveCount == 2 && totalEarned >= threshold1) || (helpGiveCount == 1 && totalEarned >= threshold2)) {
+    console.log(`Conditions met for higher priority. Creating give help entry and proceeding up the chain.`);
+    await createGiveHelpEntry(senderId, uplineUser.id, amount, uplineUser.upi_number, true, priority);
+    await createGiveHelpEntryForUpline(senderId, uplineUser, amount, priority + 1);
+  } else {
+    console.log(`Conditions not met. Splitting amount if priority > 0.`);
+    if (priority > 0) {
+      await splitAmountBetweenUsers(senderId, uplineUser, defaultUser, amount, priority);
+    } else {
+      await createGiveHelpEntry(senderId, uplineUser.id, amount, uplineUser.upi_number, false, priority);
+    }
+  }
+};
+
+const processDefaultGiveHelpEntry = async (
+  senderId: number,
+  uplineUser: any,
+  defaultUser: any,
+  amount: number,
+  priority: number,
+  totalEarned: number
+) => {
+  console.log(`Processing default give help entry for amount: ${amount}, totalEarned: ${totalEarned}`);
+  
+  if ((amount == 600 && totalEarned >= 900) || 
+      (amount == 1500 && totalEarned >= 3000) || 
+      (amount == 2000 && totalEarned >= 31900) || 
+      (amount == 1000 && totalEarned >= 33900)) {
+    console.log(`Default conditions met. Creating give help entry and proceeding up the chain.`);
+    await createGiveHelpEntry(senderId, uplineUser.id, amount, uplineUser.upi_number, true, priority);
+    await createGiveHelpEntryForUpline(senderId, uplineUser, amount, priority + 1);
+  } else {
+    console.log(`Default conditions not met. Splitting amount if priority >= 0.`);
+    if (priority >= 0) {
+      await splitAmountBetweenUsers(senderId, uplineUser, defaultUser, amount, priority);
+    } else {
+      await createGiveHelpEntry(senderId, uplineUser.id, amount, uplineUser.upi_number, false, priority);
+    }
+  }
+};
+
+const splitAmountBetweenUsers = async (
+  senderId: number,
+  uplineUser: any,
+  defaultUser: any,
+  amount: number,
+  priority: number
+) => {
+  console.log(`Splitting amount: ${amount} between uplineUser: ${uplineUser.id} and defaultUser: ${defaultUser.id}`);
+  
+  await createGiveHelpEntry(senderId, uplineUser.id, amount / 2, uplineUser.upi_number, false, priority);
+  await createGiveHelpEntry(senderId, defaultUser.id, amount / 2, defaultUser.upi_number, false, priority);
+};
+
 
 export const getTotalmemberById = async (req: any, res: any) => {
   const userId = parseInt(req.params.id)
@@ -509,3 +644,6 @@ export const gettotals = async (req: any, res: any) => {
   })
   res.status(200).json({status:200,data:totals})
 }
+
+
+
