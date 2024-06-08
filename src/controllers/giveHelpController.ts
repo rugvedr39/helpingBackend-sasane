@@ -580,7 +580,7 @@ const processDefaultGiveHelpEntry = async (
     await createGiveHelpEntryForUpline(senderId, uplineUser, amount, priority + 1);
   } else {
     console.log(`Default conditions not met. Splitting amount if priority >= 0.`);
-    if (priority >= 0) {
+    if (priority > 0) {
       await splitAmountBetweenUsers(senderId, uplineUser, defaultUser, amount, priority);
     } else {
       await createGiveHelpEntry(senderId, uplineUser.id, amount, uplineUser.upi_number, false, priority);
