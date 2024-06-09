@@ -2,6 +2,7 @@ import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
 import transaction from "./routes/transactionRoutes";
 import { testDatabaseConnection } from "./config/database";
+const morgan = require('morgan');
 import adminRouter from "./routes/adminRouter";
 import epin from "./routes/epinRoutes";
 import express from "express";
@@ -11,6 +12,7 @@ dotenv.config();
 
 const app = express();
 app.use(cors());
+app.use(morgan('combined'));
 
 testDatabaseConnection();
 
