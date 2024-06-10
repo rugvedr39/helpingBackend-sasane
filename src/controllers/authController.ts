@@ -189,9 +189,8 @@ async function processUplinePayments(user: any, senderId: any, amount: any,prior
       );
       break;
     }else{
-     if (priority>0) {
       await splitAmountBetweenUsers(senderId, uplineUser, defaultUser, amount, priority);
-     }
+      break;
     }
   }
 }
