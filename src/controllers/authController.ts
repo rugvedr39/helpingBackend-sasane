@@ -189,25 +189,25 @@ async function processUplinePayments(user: any, senderId: any, amount: any,prior
       );
       break;
     }else{
-      const splitAmountBetweenUsers = async (
-        senderId: number,
-        uplineUser: any,
-        defaultUser: any,
-        amount: number,
-        priority: number
-      ) => {
-        console.log(`Splitting amount: ${amount} between uplineUser: ${uplineUser.id} and defaultUser: ${defaultUser.id}`);
-        
-        await createGiveHelpEntry(senderId, uplineUser.id, amount / 2, uplineUser.upi_number, false, priority);
-        await createGiveHelpEntry(senderId, defaultUser.id, amount / 2, defaultUser.upi_number, false, priority);
-      };
-      if (priority > 0) {
-        await splitAmountBetweenUsers(senderId, uplineUser, defaultUser, amount, priority);
-      } else {
-        await createGiveHelpEntry(senderId, uplineUser.id, amount, uplineUser.upi_number, false, priority);
-      }    }
+     if (priority>0) {
+      await splitAmountBetweenUsers(senderId, uplineUser, defaultUser, amount, priority);
+     }
+    }
   }
 }
+
+const splitAmountBetweenUsers = async (
+  senderId: number,
+  uplineUser: any,
+  defaultUser: any,
+  amount: number,
+  priority: number
+) => {
+  console.log(`Splitting amount: ${amount} between uplineUser: ${uplineUser.id} and defaultUser: ${defaultUser.id}`);
+  
+  await createGiveHelpEntry(senderId, uplineUser.id, amount / 2, uplineUser.upi_number, false, priority);
+  await createGiveHelpEntry(senderId, defaultUser.id, amount / 2, defaultUser.upi_number, false, priority);
+};
 
 
 
