@@ -10,7 +10,7 @@ router.get("/user/:referral_code", async (req, res) => {
   console.log(referral_code);
   try {
     const user: any = await User.findOne({
-      where: { username: referral_code,status:"Completed" },
+      where: { username: referral_code,status:"Active" },
     });
     console.log(user);
     if (user) {
