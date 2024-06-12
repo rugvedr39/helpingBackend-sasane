@@ -70,12 +70,12 @@ export const signup = async (req: Request, res: Response) => {
   });
   const uniqueMobile = await User.findOne({ where: { mobile_number: mobile_number } });
   if (uniqueMobile) {
-    return res.status(400).json({ message: "Mobile number already exists." });
+    return res.status(409).json({ message: "Mobile number already exists." });
   }
   
   const uniqueUpi = await User.findOne({ where: { upi_number: upi_number } });
   if (uniqueUpi) {
-    return res.status(400).json({ message: "UPI number already exists." });
+    return res.status(409).json({ message: "UPI number already exists." });
   }
   const date = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
   const time = new Date().toTimeString().slice(0, 8); // HH:MM:SS
@@ -107,7 +107,6 @@ export const signup = async (req: Request, res: Response) => {
     await processReferralPayments(newUser, referral_code);
     res.status(201).json(newUser);
   } catch (error) {
-    console.error("Error signing up:", error);
     if (error instanceof UniqueConstraintError) {
       const duplicatedField = error.errors[0].path;
       res.status(409).json({ message: `${duplicatedField} is already in use.` });
