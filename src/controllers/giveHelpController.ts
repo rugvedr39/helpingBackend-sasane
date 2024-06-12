@@ -225,6 +225,8 @@ await UserTotals.findOne({ where: { user_id: transaction.receiver_id } }).then(a
     }
 
     const handleAlertEntries = async (amountToCheck: number, uplineAmount: number) => {
+      console.log("handleAlertEntries", amountToCheck);
+      
       const alertEntries: any = await GiveHelp.findAll({
         where: {
           receiver_id: transaction.sender_id,
@@ -255,8 +257,8 @@ await UserTotals.findOne({ where: { user_id: transaction.receiver_id } }).then(a
           }
         });
 
+        console.log(amountToCheck);
         if (amountToCheck==300) {
-          console.log("hello");
           
           const splitAmountBetweenUsers:any = await GiveHelp.findAll({
             where:{
@@ -268,6 +270,8 @@ await UserTotals.findOne({ where: { user_id: transaction.receiver_id } }).then(a
               amount:150
             }
           })
+          console.log("splitAmountBetweenUsers",splitAmountBetweenUsers.length);
+          
           for(let alertEntry of splitAmountBetweenUsers){
             
             await UserTotals.findOne({where:{
@@ -320,6 +324,8 @@ await UserTotals.findOne({ where: { user_id: transaction.receiver_id } }).then(a
 
     if (amount == 600) {
       await handleAlertEntries(300, 600);
+      console.log("hello world");
+      
     }
     if (amount == 1500) {
       await handleAlertEntries(600, 1500);
