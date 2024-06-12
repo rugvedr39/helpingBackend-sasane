@@ -182,26 +182,47 @@ await UserTotals.findOne({ where: { user_id: transaction.receiver_id } }).then(a
       user.status = "Active";
     }
     await user.save();
-    if (transaction.priority!=null) {
-      console.log("Transaction priority",transaction.priority);
-      const priortyTransaction: any = await GiveHelp.findAll({
-        where: {
-          sender_id: transaction.sender_id,
-          status:"initiate",
-          priority:{
-            [Op.ne]: null
+
+    if (transaction.amount==150.00) {
+      if (transaction.priority!=null) {
+        console.log("Transaction priority",transaction.priority);
+        const priortyTransaction: any = await GiveHelp.findAll({
+          where: {
+            sender_id: transaction.sender_id,
+            status:"initiate",
+            priority:{
+              [Op.ne]: null
+            },
+            amount:300
           },
-          amount:amount
-        },
-      });
-      if (priortyTransaction.length>0) {
-        for (const entry of priortyTransaction) {
-          await entry.destroy();
+        });
+        if (priortyTransaction.length>0) {
+          for (const entry of priortyTransaction) {
+            await entry.destroy();
+          }
         }
       }
-
+    }else{
+      if (transaction.priority!=null) {
+        console.log("Transaction priority",transaction.priority);
+        const priortyTransaction: any = await GiveHelp.findAll({
+          where: {
+            sender_id: transaction.sender_id,
+            status:"initiate",
+            priority:{
+              [Op.ne]: null
+            },
+            alert:true,
+            amount:amount
+          },
+        });
+        if (priortyTransaction.length>0) {
+          for (const entry of priortyTransaction) {
+            await entry.destroy();
+          }
+        }
+      }
     }
-
 
     const handleAlertEntries = async (amountToCheck: number, uplineAmount: number) => {
       const alertEntries: any = await GiveHelp.findAll({
@@ -233,7 +254,25 @@ await UserTotals.findOne({ where: { user_id: transaction.receiver_id } }).then(a
             }
           }
         });
-    
+
+        if (amountToCheck==300) {
+          console.log("hello");
+          
+          const splitAmountBetweenUsers:any = await GiveHelp.findAll({
+            where:{
+              sender_id: alertEntries[0].sender_id,
+              status: 'initiate',
+              priority: {
+                [Op.ne]: null,
+              },
+              amount:150
+            }
+          })
+          for(let alertEntry of splitAmountBetweenUsers){
+             await alertEntry.destroy();
+          }
+
+        }
         for (const entry of uplineEntries) {
           await entry.destroy();
         }
