@@ -65,6 +65,18 @@ export const signup = async (req: Request, res: Response) => {
     return res.status(400).json({ message: "Referral code is required." });
   }
   const username = await generateUniqueUsername();
+  const unique: any = await User.findOne({
+    where: { mobile_number: mobile_number },
+  });
+  if (unique) {
+    res.status(400).json({ message: "Mobile number already exists." });
+  }
+  const unique1: any = await User.findOne({
+    where: { upi_number: upi_number },
+  });
+  if (unique1) {
+    res.status(400).json({ message: "UPI number already exists." });
+  }
   const date = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
   const time = new Date().toTimeString().slice(0, 8); // HH:MM:SS
   try {
@@ -75,6 +87,7 @@ export const signup = async (req: Request, res: Response) => {
         message: "No available sponsor found for the provided referral code.",
       });
     }
+
     const isEpinValid = await checkEpinValidity(epin);
     if (!isEpinValid) {
       return res.status(402).json({ message: "Invalid epin or epin cannot be used." });
