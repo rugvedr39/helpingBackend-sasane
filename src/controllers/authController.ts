@@ -176,7 +176,7 @@ async function processUplinePayments(user: any, senderId: any, amount: any, prio
 
     const uplineUserTotals: any = await UserTotals.findOne({ where: { user_id: uplineUser.id } });
     const totalEarned = uplineUserTotals ? parseFloat(uplineUserTotals.total_received.toString()) : 0;
-    const isLevelIncreased: any = await GiveHelp.findOne({ where: { sender_id: uplineUser.id, status: "Completed",amount:600 } });
+    const isLevelIncreased: any = await GiveHelp.findAll({ where: { sender_id: uplineUser.id, status: "Completed",amount:600 } });
 
     if (totalEarned <= 900) {
       console.log("Checked: user is a small earner of money.");
@@ -194,7 +194,7 @@ async function processUplinePayments(user: any, senderId: any, amount: any, prio
         );
       }
     } else {
-      if (!isLevelIncreased) {
+      if (isLevelIncreased.length>0) {
         await createGiveHelpEntry(
           senderId,
           uplineUser.id,

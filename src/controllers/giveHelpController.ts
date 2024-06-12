@@ -269,11 +269,50 @@ await UserTotals.findOne({ where: { user_id: transaction.receiver_id } }).then(a
             }
           })
           for(let alertEntry of splitAmountBetweenUsers){
+            
+            await UserTotals.findOne({where:{
+              user_id: alertEntry.sender_id,
+            }})
+            .then(async (userTotals: any) => {
+                if (userTotals) {
+                  userTotals.initiated_transactions = parseFloat(userTotals.initiated_transactions.toString()) - 150;
+                  await userTotals.save();
+                }
+              });
+              await UserTotals.findOne({where:{
+                user_id: alertEntry.receiver_id,
+              }})
+              .then(async (userTotals: any) => {
+                  if (userTotals) {
+                    userTotals.initiated_take = parseFloat(userTotals.initiated_take.toString()) - 150;
+                    await userTotals.save();
+                  }
+                });
              await alertEntry.destroy();
           }
 
         }
+
+
         for (const entry of uplineEntries) {
+          await UserTotals.findOne({where:{
+            user_id: entry.receiver_id,
+          }})
+          .then(async (userTotals: any) => {
+              if (userTotals) {
+                userTotals.initiated_take = parseFloat(userTotals.initiated_take.toString()) - amountToCheck;
+                await userTotals.save();
+              }
+            });
+            await UserTotals.findOne({where:{
+              user_id: entry.sender_id,
+            }})
+            .then(async (userTotals: any) => {
+                if (userTotals) {
+                  userTotals.initiated_transactions = parseFloat(userTotals.initiated_transactions.toString()) - amountToCheck;
+                  await userTotals.save();
+                }
+              });
           await entry.destroy();
         }
       }

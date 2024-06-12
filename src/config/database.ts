@@ -10,6 +10,7 @@ const sequelize = new Sequelize({
   host: "mysql-13248809-rugvedr39-2562.l.aivencloud.com",
   port: 19638,
   dialect: "mysql",
+  logging: false,
   dialectOptions: {
     ssl: {
       ca: fs.readFileSync(path.resolve(__dirname, "./ca.pem")).toString(),
@@ -24,6 +25,7 @@ const sequelize = new Sequelize({
 //   host: "127.0.0.1",
 //   port: 3306,
 //   dialect: "mysql",
+//   logging: false,
 // });
 
 // Test the database connection
