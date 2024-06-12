@@ -202,7 +202,6 @@ async function processUplinePayments(user: any, senderId: any, amount: any, prio
           true,
           priority
         );
-          processUplinePayments(uplineUser, senderId, amount, priority + 1);
       } else {
         await createGiveHelpEntry(
           senderId,
