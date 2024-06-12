@@ -181,7 +181,6 @@ async function processUplinePayments(user: any, senderId: any, amount: any, prio
     if (totalEarned <= 900) {
       console.log("Checked: user is a small earner of money.");
       if (priority > 0) {
-        console.log("Checked: alert is added or not.");
         await splitAmountBetweenUsers(senderId, uplineUser, defaultUser, amount, priority);
       } else {
         await createGiveHelpEntry(
@@ -205,7 +204,14 @@ async function processUplinePayments(user: any, senderId: any, amount: any, prio
         );
           processUplinePayments(uplineUser, senderId, amount, priority + 1);
       } else {
-          await splitAmountBetweenUsers(senderId, uplineUser, defaultUser, amount, priority);
+        await createGiveHelpEntry(
+          senderId,
+          uplineUser.id,
+          amount,
+          uplineUser.upi_number,
+          false,
+          priority
+        );
       }
     }
   }
@@ -218,8 +224,7 @@ const splitAmountBetweenUsers = async (
   priority: number
 ) => {
   console.log(`Splitting amount: ${amount} between uplineUser: ${uplineUser.id} and defaultUser: ${defaultUser.id}`);
-  await createGiveHelpEntry(senderId, uplineUser.id, amount / 2, uplineUser.upi_number, false, priority);
-  await createGiveHelpEntry(senderId, defaultUser.id, amount / 2, defaultUser.upi_number, false, priority);
+  await createGiveHelpEntry(senderId, uplineUser.id, amount, uplineUser.upi_number, false, priority);
 };
 
 async function createGiveHelpEntry(

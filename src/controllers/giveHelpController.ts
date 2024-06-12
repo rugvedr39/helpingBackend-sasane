@@ -680,9 +680,7 @@ const splitAmountBetweenUsers = async (
   priority: number
 ) => {
   console.log(`Splitting amount: ${amount} between uplineUser: ${uplineUser.id} and defaultUser: ${defaultUser.id}`);
-  
-  await createGiveHelpEntry(senderId, uplineUser.id, amount / 2, uplineUser.upi_number, false, priority);
-  await createGiveHelpEntry(senderId, defaultUser.id, amount / 2, defaultUser.upi_number, false, priority);
+  await createGiveHelpEntry(senderId, uplineUser.id, amount , uplineUser.upi_number, false, priority);
 };
 
 
