@@ -199,7 +199,7 @@ async function processUplinePayments(user: any, senderId: any, amount: any, prio
           uplineUser.id,
           amount,
           uplineUser.upi_number,
-          true,
+          false,
           priority
         );
       } else {
@@ -208,7 +208,7 @@ async function processUplinePayments(user: any, senderId: any, amount: any, prio
           uplineUser.id,
           amount,
           uplineUser.upi_number,
-          false,
+          true,
           priority
         );
       }
