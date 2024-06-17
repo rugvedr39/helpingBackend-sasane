@@ -514,7 +514,7 @@ const createGiveHelpEntryForUpline = async (
 ) => {
   try {
     console.log(`Entering createGiveHelpEntryForUpline with senderId: ${senderId}, amount: ${amount}, priority: ${priority}`);
-    
+
     const defaultUser: any = await User.findOne({ where: { id: 5 } });
     if (!upline || !defaultUser) {
       throw new Error(`Default upline user with ID 5 not found`);
@@ -535,7 +535,7 @@ const createGiveHelpEntryForUpline = async (
       const helpGiveCount = helpGive.length;
       console.log(`HelpGive entries found: ${helpGiveCount}`);
 
-      if (helpGiveCount == 1 && amount == 4000) {
+      if (helpGiveCount == 1 && amount == 4000 || helpGiveCount==2) {
         if (level==4) {
           if (priority > 0) {
             await splitAmountBetweenUsers(senderId, uplineUser, defaultUser, amount, priority);
@@ -565,7 +565,7 @@ const createGiveHelpEntryForUpline = async (
         }
       }else{
         if (helpGiveCount == 0 && amount == 4000) {
-          if (totalEarned<=17900) {
+          if (totalEarned<=17900 && totalEarned>= 9900) {
             await createGiveHelpEntry(senderId, uplineUser.id, amount, uplineUser.upi_number, false, priority);
           }else{
             await createGiveHelpEntry(senderId, uplineUser.id, amount, uplineUser.upi_number, true, priority);
@@ -575,7 +575,9 @@ const createGiveHelpEntryForUpline = async (
       }
 
 
-      if (helpGiveCount == 1 && amount == 3000) {
+
+
+      if (helpGiveCount == 1 && amount == 3000 || helpGiveCount == 2) {
         if (level==3) {
           if (priority > 0) {
             await splitAmountBetweenUsers(senderId, uplineUser, defaultUser, amount, priority);
@@ -591,7 +593,7 @@ const createGiveHelpEntryForUpline = async (
               await createGiveHelpEntry(senderId, uplineUser.id, amount, uplineUser.upi_number, false, priority);
             }
           }else{
-            if (totalEarned<31900) {
+            if (totalEarned<31900 && totalEarned >= 25900) {
               if (priority > 0) {
                 await splitAmountBetweenUsers(senderId, uplineUser, defaultUser, amount, priority);
               } else {
@@ -605,7 +607,7 @@ const createGiveHelpEntryForUpline = async (
         }
       }else{
         if (helpGiveCount == 0 && amount == 3000) {
-          if (totalEarned<=9900) {
+          if (totalEarned<=9900 && totalEarned >= 3900) {
             await createGiveHelpEntry(senderId, uplineUser.id, amount, uplineUser.upi_number, false, priority);
           }else{
             await createGiveHelpEntry(senderId, uplineUser.id, amount, uplineUser.upi_number, true, priority);
@@ -613,8 +615,6 @@ const createGiveHelpEntryForUpline = async (
           }
         }
       }
-
-
 
       if (amount!=4000 && amount!=3000) {
         console.log(`No helpGive entries found. Processing default give help entry.`);
@@ -630,31 +630,6 @@ const createGiveHelpEntryForUpline = async (
   }
 };
 
-const processGiveHelpEntry = async (
-  senderId: number,
-  uplineUser: any,
-  defaultUser: any,
-  amount: number,
-  priority: number,
-  totalEarned: number,
-  helpGiveCount: number,
-  threshold1: number,
-  threshold2: number
-) => {
-  console.log(`Processing give help entry for amount: ${amount}, helpGiveCount: ${helpGiveCount}, totalEarned: ${totalEarned}`);
-  if ((helpGiveCount == 2 && totalEarned >= threshold1) || (helpGiveCount == 1 && totalEarned >= threshold2)) {
-    console.log(`Conditions met for higher priority. Creating give help entry and proceeding up the chain.`);
-    await createGiveHelpEntry(senderId, uplineUser.id, amount, uplineUser.upi_number, true, priority);
-    await createGiveHelpEntryForUpline(senderId, uplineUser, amount, priority + 1);
-  } else {
-    console.log(`Conditions not met. Splitting amount if priority > 0.`);
-    if (priority > 0) {
-      await splitAmountBetweenUsers(senderId, uplineUser, defaultUser, amount, priority);
-    } else {
-      await createGiveHelpEntry(senderId, uplineUser.id, amount, uplineUser.upi_number, false, priority);
-    }
-  }
-};
 
 const processDefaultGiveHelpEntry = async (
   senderId: number,
@@ -672,9 +647,9 @@ const processDefaultGiveHelpEntry = async (
   console.log("amount: ", amount);
 
   if ((amount == 600 && totalEarned <= 900 || checkUserLevel.level > 1) ||
-  (amount == 1500 && totalEarned <= 3900 || checkUserLevel.level > 2) ||
-  (amount == 2000 && totalEarned <= 35900 || checkUserLevel.level > 8) ||
-  (amount == 1000 && totalEarned <= 37900 || checkUserLevel.level > 8)) {
+  (amount == 1500 && totalEarned <= 3900 && totalEarned >= 900 || checkUserLevel.level > 2) ||
+  (amount == 2000 && totalEarned <= 35900 && totalEarned >= 31900  || checkUserLevel.level > 8) ||
+  (amount == 1000 && totalEarned <= 37900 && totalEarned >= 35900 || checkUserLevel.level > 8)) {
     console.log(`Default conditions not met. Splitting amount if priority >= 0.`);
     if (priority > 0) {
       await splitAmountBetweenUsers(senderId, uplineUser, defaultUser, amount, priority);

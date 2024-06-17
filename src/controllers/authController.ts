@@ -65,9 +65,7 @@ export const signup = async (req: Request, res: Response) => {
     return res.status(400).json({ message: "Referral code is required." });
   }
   const username = await generateUniqueUsername();
-  const unique: any = await User.findOne({
-    where: { mobile_number: mobile_number },
-  });
+
   const uniqueMobile = await User.findOne({ where: { mobile_number: mobile_number } });
   if (uniqueMobile) {
     return res.status(409).json({ message: "Mobile number already exists." });
@@ -77,6 +75,7 @@ export const signup = async (req: Request, res: Response) => {
   if (uniqueUpi) {
     return res.status(409).json({ message: "UPI number already exists." });
   }
+  
   const date = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
   const time = new Date().toTimeString().slice(0, 8); // HH:MM:SS
   try {
