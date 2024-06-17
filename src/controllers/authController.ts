@@ -103,7 +103,7 @@ export const signup = async (req: Request, res: Response) => {
       referral_code: username,
       referred_by: sponsorUser ? sponsorUser.id : null,
     });
-    // await useEpin(epin, newUser.id);
+    await useEpin(epin, newUser.id);
     await processReferralPayments(newUser, referral_code);
     res.status(200).json(newUser);
   } catch (error) {
