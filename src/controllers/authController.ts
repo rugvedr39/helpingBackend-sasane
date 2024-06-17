@@ -103,14 +103,15 @@ export const signup = async (req: Request, res: Response) => {
       referral_code: username,
       referred_by: sponsorUser ? sponsorUser.id : null,
     });
-    await useEpin(epin, newUser.id);
+    // await useEpin(epin, newUser.id);
     await processReferralPayments(newUser, referral_code);
-    res.status(201).json(newUser);
+    res.status(200).json(newUser);
   } catch (error) {
     if (error instanceof UniqueConstraintError) {
       const duplicatedField = error.errors[0].path;
       res.status(409).json({ message: `${duplicatedField} is already in use.` });
     } else {
+      console.error("Error signing up:", error);
       res.status(500).json({ message: "Error signing up" });
     }
   }
@@ -154,6 +155,7 @@ const generateUniqueUsername = async () => {
 
 async function processReferralPayments(newUser: any, sponser: any) {
   const new_sponser: any = await User.findOne({ where: { username: sponser } });
+  const newUserforSponser: any = await User.findOne({ where: { id: newUser.referred_by } });
   if (new_sponser) {
     await createGiveHelpEntry(
       newUser.id,
@@ -163,7 +165,7 @@ async function processReferralPayments(newUser: any, sponser: any) {
       false,
       null
     );
-    await processUplinePayments(new_sponser, newUser.id, 300);
+    await processUplinePayments(newUserforSponser, newUser.id, 300);
   }
 }
 
@@ -189,6 +191,7 @@ async function processUplinePayments(user: any, senderId: any, amount: any, prio
     const uplineUserTotals: any = await UserTotals.findOne({ where: { user_id: uplineUser.id } });
     const totalEarned = uplineUserTotals ? parseFloat(uplineUserTotals.total_received.toString()) : 0;
     const isLevelIncreased: any = await GiveHelp.findAll({ where: { sender_id: uplineUser.id, status: "Completed",amount:600 } });
+    const isLevelIncreasedUser: any = await User.findOne({ where: { id: uplineUser.id } });
 
     if (totalEarned <= 900) {
       console.log("Checked: user is a small earner of money.");
@@ -205,7 +208,10 @@ async function processUplinePayments(user: any, senderId: any, amount: any, prio
         );
       }
     } else {
-      if (isLevelIncreased.length>0) {
+      console.log("what is the level of the user: ", isLevelIncreasedUser.level);
+      console.log("is he paid the moeny", isLevelIncreased.length);
+
+      if (isLevelIncreased.length>0 || isLevelIncreasedUser.level>1) {
         await createGiveHelpEntry(
           senderId,
           uplineUser.id,
@@ -223,6 +229,7 @@ async function processUplinePayments(user: any, senderId: any, amount: any, prio
           true,
           priority
         );
+        processUplinePayments(uplineUser, senderId, amount, priority + 1);
       }
     }
   }
@@ -259,25 +266,28 @@ async function createGiveHelpEntry(
     priority: priority
   });
 
-  let user: any = await UserTotals.findOne({ where: { user_id: senderId } });
-  if (user) {
-    user.initiated_transactions = parseInt(user.initiated_transactions) + amount;
-    await user.save();
-  } else {
-    await UserTotals.create({
-      user_id: senderId,
-      initiated_transactions: amount,
-    });
-  }
+  if (alertt!==true) {
+    let user: any = await UserTotals.findOne({ where: { user_id: senderId } });
+    if (user) {
+      user.initiated_transactions = parseInt(user.initiated_transactions) + amount;
+      await user.save();
+    } else {
+      await UserTotals.create({
+        user_id: senderId,
+        initiated_transactions: amount,
+      });
+    }
 
-  const update_user: any = await UserTotals.findOne({ where: { user_id: receiverId } });
-  if (update_user) {
-    update_user.initiated_take = parseFloat(update_user.initiated_take.toString()) + amount;
-    await update_user.save();
-  } else {
-    await UserTotals.create({
-      user_id: receiverId,
-      initiated_take: amount,
-    });
+    const update_user: any = await UserTotals.findOne({ where: { user_id: receiverId } });
+    if (update_user) {
+      update_user.initiated_take = parseFloat(update_user.initiated_take.toString()) + amount;
+      await update_user.save();
+    } else {
+      await UserTotals.create({
+        user_id: receiverId,
+        initiated_take: amount,
+      });
+    }
+
   }
 }
