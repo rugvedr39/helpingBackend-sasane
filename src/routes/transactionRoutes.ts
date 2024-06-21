@@ -26,7 +26,7 @@ router.get("/gettotals/:id", gettotals);
 
 router.get("/top-receivers", async (req, res) => {
   const excludedIds = [
-    5, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95
+    5, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95,124
   ];
 
   try {
