@@ -278,26 +278,8 @@ await UserTotals.findOne({ where: { user_id: transaction.receiver_id } }).then(a
  
 
     if (level === 1) {
-      console.log("user level is", level);
-      const rs300: any = await GiveHelp.findOne({
-        where: {
-          sender_id: transaction.sender_id,
-          amount: 300.0,
-          status: "Completed",
-          // receiver_id: {
-          //   [Op.ne]: 5,
-          // },
-        },
-      });
-      if (rs300 != null) {
-        let upline: any = await User.findOne({
-          where: { id: rs300.receiver_id },
-        });
-        upline = await User.findOne({
-          where: { id: upline.referred_by },
-        });
-        await createGiveHelpEntryForUpline(user.id, upline, 600);
-      }
+        let refferdforuplinePayment:any = await User.findOne({where:{id:user.referred_by}})
+        await createGiveHelpEntryForUpline(user.id, refferdforuplinePayment, 600);
     } else {
       let upline: any = await User.findOne({
         where: { id: transaction.receiver_id },

@@ -25,6 +25,10 @@ User.init(
       allowNull: false,
       defaultValue: 0,
     },
+    main_referred_by:{
+      type: DataTypes.INTEGER.UNSIGNED,
+      allowNull: true,
+    },
     email: {
       type: DataTypes.STRING(255),
       allowNull: true,

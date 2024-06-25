@@ -12,6 +12,7 @@ dotenv.config();
 
 const app = express();
 app.use(cors());
+
 app.use(morgan('combined',{
   skip: function (req, res) { return res.statusCode < 400 }
 }));

@@ -1,64 +1,22 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { User } from "../models/User";
-import { UniqueConstraintError } from "sequelize";
+import { UniqueConstraintError, where } from "sequelize";
 import { GiveHelp } from "../models/give_help";
 import { EPin, checkEpinValidity, useEpin } from "../models/epin.model";
 import { TeamSize } from "../models/TeamSize";
 import { UserTotals } from "../models/UserTotals";
 
-const findAvailableSponsor = async (referralCode: string): Promise<User | null> => {
-  const sponsor: any = await User.findOne({
-    where: { username: referralCode },
-  });
-
-  if (!sponsor) return null;
-
-  return findNextAvailableSponsor(sponsor.id);
-};
-
-// Check if the current user can accept new referrals
-const canAcceptNewReferrals = async (userId: number): Promise<boolean> => {
-  const count = await User.count({
-    where: { referred_by: userId },
-  });
-  return count < 3;
-};
-
-// Breadth-first search to find the next available sponsor
-const findNextAvailableSponsor = async (userId: number): Promise<User | null> => {
-  const queue = [userId];
-
-  while (queue.length > 0) {
-    const currentUserId: any = queue.shift();
-
-    if (await canAcceptNewReferrals(currentUserId)) {
-      return User.findByPk(currentUserId);
-    }
-
-    const children: any = await User.findAll({
-      where: { referred_by: currentUserId },
-      attributes: ["id"],
-    });
-
-    for (const child of children) {
-      queue.push(child.id);
-    }
-  }
-
-  return null;
-};
-
 export const signup = async (req: Request, res: Response) => {
   const {
-    email,
     password,
     mobile_number,
     name,
     bank_details,
     upi_number,
     referral_code,
-    epin
+    epin,
+    selected_sponsor
   } = req.body;
 
   if (!referral_code) {
@@ -75,12 +33,18 @@ export const signup = async (req: Request, res: Response) => {
   if (uniqueUpi) {
     return res.status(409).json({ message: "UPI number already exists." });
   }
-  
-  const date = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-  const time = new Date().toTimeString().slice(0, 8); // HH:MM:SS
+
+  const mainRefral:any = await User.findOne({where:{username:referral_code}})
   try {
+    let sponsorUser
     const hashedPassword = password;
-    const sponsorUser: any = await findAvailableSponsor(referral_code);
+    if (!selected_sponsor) {
+      sponsorUser=mainRefral.id
+    }else{
+      sponsorUser=selected_sponsor
+    }
+
+
     if (!sponsorUser) {
       return res.status(400).json({
         message: "No available sponsor found for the provided referral code.",
@@ -91,7 +55,6 @@ export const signup = async (req: Request, res: Response) => {
     if (!isEpinValid) {
       return res.status(402).json({ message: "Invalid epin or epin cannot be used." });
     }
-
     const newUser: any = await User.create({
       username: username,
       name,
@@ -100,10 +63,16 @@ export const signup = async (req: Request, res: Response) => {
       bank_details,
       upi_number,
       referral_code: username,
-      referred_by: sponsorUser ? sponsorUser.id : null,
+      referred_by: sponsorUser,
+      main_referred_by: mainRefral.id
     });
     await useEpin(epin, newUser.id);
-    await processReferralPayments(newUser, referral_code);
+    if (newUser.referred_by == newUser.main_referred_by) {
+      await processReferralPayments(newUser, referral_code);
+    }else{
+      await createGiveHelpEntry(newUser.id, newUser.main_referred_by, 300, mainRefral.upi_number, false, 0);
+      await createGiveHelpEntry(newUser.id, newUser.main_referred_by, 300, mainRefral.upi_number, false, 0);
+    }
     res.status(200).json(newUser);
   } catch (error) {
     if (error instanceof UniqueConstraintError) {
