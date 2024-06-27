@@ -41,7 +41,8 @@ export const signup = async (req: Request, res: Response) => {
     if (!selected_sponsor) {
       sponsorUser=mainRefral.id
     }else{
-      sponsorUser=selected_sponsor
+      const mainRefralselected_sponsor:any = await User.findOne({where:{username:selected_sponsor}})
+      sponsorUser=mainRefralselected_sponsor.id
     }
 
 

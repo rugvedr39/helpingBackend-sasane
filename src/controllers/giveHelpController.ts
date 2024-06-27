@@ -279,10 +279,14 @@ await UserTotals.findOne({ where: { user_id: transaction.receiver_id } }).then(a
 
     if (level === 1) {
         let refferdforuplinePayment:any = await User.findOne({where:{id:user.referred_by}})
+         refferdforuplinePayment = await User.findOne({where:{id:refferdforuplinePayment.referred_by}})
         await createGiveHelpEntryForUpline(user.id, refferdforuplinePayment, 600);
     } else {
       let upline: any = await User.findOne({
         where: { id: transaction.receiver_id },
+      });
+      upline = await User.findOne({
+        where: { id: upline.referred_by },
       });
 
       if (user.level > 1 && user.level < 9) {
