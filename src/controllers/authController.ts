@@ -87,25 +87,20 @@ export const signup = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-  console.log('Login attempt:', req.body);
   const { username, password } = req.body;
+
   try {
     const user: any = await User.findOne({ where: { username } });
-    console.log('User found:', user ? 'Yes' : 'No');
     if (!user) {
-      console.log('Sending 404 response');
-      return res.status(404).json({ message: "User not found" });
+      return res.status(200).json({ message: "User not found" });
     }
     if (password != user.password) {
-      console.log('Sending 401 response');
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(200).json({ message: "Invalid credentials" });
     }
     const token = jwt.sign({ userId: user.id }, "your_secret_key");
-    console.log('Sending 200 response with token');
     res.status(200).json({ token, user });
   } catch (error) {
     console.error("Error logging in:", error);
-    console.log('Sending 500 response');
     res.status(500).json({ message: "Error logging in" });
   }
 };
