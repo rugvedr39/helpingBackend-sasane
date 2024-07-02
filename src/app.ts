@@ -11,11 +11,13 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-app.use(cors());
-
-app.use(morgan('combined',{
-  skip: function (req, res) { return res.statusCode < 400 }
+app.use(cors({
+  origin: 'http://localhost:8100', 
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+app.use(morgan('combined',));
 
 
 testDatabaseConnection();
