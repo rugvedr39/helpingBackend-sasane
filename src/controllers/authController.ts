@@ -24,15 +24,15 @@ export const signup = async (req: Request, res: Response) => {
   }
   const username = await generateUniqueUsername();
 
-  const uniqueMobile = await User.findOne({ where: { mobile_number: mobile_number } });
-  if (uniqueMobile) {
-    return res.status(409).json({ message: "Mobile number already exists." });
-  }
+  // const uniqueMobile = await User.findOne({ where: { mobile_number: mobile_number } });
+  // if (uniqueMobile) {
+  //   return res.status(409).json({ message: "Mobile number already exists." });
+  // }
   
-  const uniqueUpi = await User.findOne({ where: { upi_number: upi_number } });
-  if (uniqueUpi) {
-    return res.status(409).json({ message: "UPI number already exists." });
-  }
+  // const uniqueUpi = await User.findOne({ where: { upi_number: upi_number } });
+  // if (uniqueUpi) {
+  //   return res.status(409).json({ message: "UPI number already exists." });
+  // }
 
   const mainRefral:any = await User.findOne({where:{username:referral_code}})
   try {
