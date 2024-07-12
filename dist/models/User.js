@@ -27,6 +27,10 @@ User.init({
         allowNull: false,
         defaultValue: 0,
     },
+    main_referred_by: {
+        type: sequelize_1.DataTypes.INTEGER.UNSIGNED,
+        allowNull: true,
+    },
     email: {
         type: sequelize_1.DataTypes.STRING(255),
         allowNull: true,

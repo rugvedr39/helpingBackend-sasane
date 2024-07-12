@@ -256,30 +256,16 @@ const TransactionComplete = async (req, res) => {
             await handleAlertEntries(2000, 1000);
         }
         if (level === 1) {
-            console.log("user level is", level);
-            const rs300 = await give_help_1.GiveHelp.findOne({
-                where: {
-                    sender_id: transaction.sender_id,
-                    amount: 300.0,
-                    status: "Completed",
-                    // receiver_id: {
-                    //   [Op.ne]: 5,
-                    // },
-                },
-            });
-            if (rs300 != null) {
-                let upline = await User_1.User.findOne({
-                    where: { id: rs300.receiver_id },
-                });
-                upline = await User_1.User.findOne({
-                    where: { id: upline.referred_by },
-                });
-                await createGiveHelpEntryForUpline(user.id, upline, 600);
-            }
+            let refferdforuplinePayment = await User_1.User.findOne({ where: { id: user.referred_by } });
+            refferdforuplinePayment = await User_1.User.findOne({ where: { id: refferdforuplinePayment.referred_by } });
+            await createGiveHelpEntryForUpline(user.id, refferdforuplinePayment, 600);
         }
         else {
             let upline = await User_1.User.findOne({
                 where: { id: transaction.receiver_id },
+            });
+            upline = await User_1.User.findOne({
+                where: { id: upline.referred_by },
             });
             if (user.level > 1 && user.level < 9) {
                 await createGiveHelpEntryForUpline(transaction.sender_id, upline, level === 2

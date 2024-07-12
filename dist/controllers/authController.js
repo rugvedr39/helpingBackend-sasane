@@ -10,58 +10,31 @@ const sequelize_1 = require("sequelize");
 const give_help_1 = require("../models/give_help");
 const epin_model_1 = require("../models/epin.model");
 const UserTotals_1 = require("../models/UserTotals");
-const findAvailableSponsor = async (referralCode) => {
-    const sponsor = await User_1.User.findOne({
-        where: { username: referralCode },
-    });
-    if (!sponsor)
-        return null;
-    return findNextAvailableSponsor(sponsor.id);
-};
-// Check if the current user can accept new referrals
-const canAcceptNewReferrals = async (userId) => {
-    const count = await User_1.User.count({
-        where: { referred_by: userId },
-    });
-    return count < 3;
-};
-// Breadth-first search to find the next available sponsor
-const findNextAvailableSponsor = async (userId) => {
-    const queue = [userId];
-    while (queue.length > 0) {
-        const currentUserId = queue.shift();
-        if (await canAcceptNewReferrals(currentUserId)) {
-            return User_1.User.findByPk(currentUserId);
-        }
-        const children = await User_1.User.findAll({
-            where: { referred_by: currentUserId },
-            attributes: ["id"],
-        });
-        for (const child of children) {
-            queue.push(child.id);
-        }
-    }
-    return null;
-};
 const signup = async (req, res) => {
-    const { email, password, mobile_number, name, bank_details, upi_number, referral_code, epin } = req.body;
+    const { password, mobile_number, name, bank_details, upi_number, referral_code, epin, selected_sponsor } = req.body;
     if (!referral_code) {
         return res.status(400).json({ message: "Referral code is required." });
     }
     const username = await generateUniqueUsername();
-    const uniqueMobile = await User_1.User.findOne({ where: { mobile_number: mobile_number } });
-    if (uniqueMobile) {
-        return res.status(409).json({ message: "Mobile number already exists." });
-    }
-    const uniqueUpi = await User_1.User.findOne({ where: { upi_number: upi_number } });
-    if (uniqueUpi) {
-        return res.status(409).json({ message: "UPI number already exists." });
-    }
-    const date = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-    const time = new Date().toTimeString().slice(0, 8); // HH:MM:SS
+    // const uniqueMobile = await User.findOne({ where: { mobile_number: mobile_number } });
+    // if (uniqueMobile) {
+    //   return res.status(409).json({ message: "Mobile number already exists." });
+    // }
+    // const uniqueUpi = await User.findOne({ where: { upi_number: upi_number } });
+    // if (uniqueUpi) {
+    //   return res.status(409).json({ message: "UPI number already exists." });
+    // }
+    const mainRefral = await User_1.User.findOne({ where: { username: referral_code } });
     try {
+        let sponsorUser;
         const hashedPassword = password;
-        const sponsorUser = await findAvailableSponsor(referral_code);
+        if (!selected_sponsor) {
+            sponsorUser = mainRefral.id;
+        }
+        else {
+            const mainRefralselected_sponsor = await User_1.User.findOne({ where: { username: selected_sponsor } });
+            sponsorUser = mainRefralselected_sponsor.id;
+        }
         if (!sponsorUser) {
             return res.status(400).json({
                 message: "No available sponsor found for the provided referral code.",
@@ -79,10 +52,17 @@ const signup = async (req, res) => {
             bank_details,
             upi_number,
             referral_code: username,
-            referred_by: sponsorUser ? sponsorUser.id : null,
+            referred_by: sponsorUser,
+            main_referred_by: mainRefral.id
         });
         await (0, epin_model_1.useEpin)(epin, newUser.id);
-        await processReferralPayments(newUser, referral_code);
+        if (newUser.referred_by == newUser.main_referred_by) {
+            await processReferralPayments(newUser, referral_code);
+        }
+        else {
+            await createGiveHelpEntry(newUser.id, newUser.main_referred_by, 300, mainRefral.upi_number, false, 0);
+            await createGiveHelpEntry(newUser.id, newUser.main_referred_by, 300, mainRefral.upi_number, false, 0);
+        }
         res.status(200).json(newUser);
     }
     catch (error) {

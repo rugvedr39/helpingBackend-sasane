@@ -7,6 +7,51 @@ import { EPin, checkEpinValidity, useEpin } from "../models/epin.model";
 import { TeamSize } from "../models/TeamSize";
 import { UserTotals } from "../models/UserTotals";
 
+
+const findAvailableSponsor = async (referralCode: string): Promise<User | null> => {
+  const sponsor: any = await User.findOne({
+    where: { username: referralCode },
+  });
+
+  if (!sponsor) return null;
+
+  return findNextAvailableSponsor(sponsor.id);
+};
+
+// Check if the current user can accept new referrals
+const canAcceptNewReferrals = async (userId: number): Promise<boolean> => {
+  const count = await User.count({
+    where: { referred_by: userId },
+  });
+  return count < 3;
+};
+
+// Breadth-first search to find the next available sponsor
+const findNextAvailableSponsor = async (
+  userId: number,
+): Promise<User | null> => {
+  const queue = [userId];
+
+  while (queue.length > 0) {
+    const currentUserId: any = queue.shift();
+
+    if (await canAcceptNewReferrals(currentUserId)) {
+      return User.findByPk(currentUserId);
+    }
+
+    const children: any = await User.findAll({
+      where: { referred_by: currentUserId },
+      attributes: ["id"],
+    });
+
+    for (const child of children) {
+      queue.push(child.id);
+    }
+  }
+
+  return null;
+};
+
 export const signup = async (req: Request, res: Response) => {
   const {
     password,
@@ -16,8 +61,7 @@ export const signup = async (req: Request, res: Response) => {
     upi_number,
     referral_code,
     epin,
-    selected_sponsor
-  } = req.body;
+    } = req.body;
 
   if (!referral_code) {
     return res.status(400).json({ message: "Referral code is required." });
@@ -36,16 +80,8 @@ export const signup = async (req: Request, res: Response) => {
 
   const mainRefral:any = await User.findOne({where:{username:referral_code}})
   try {
-    let sponsorUser
     const hashedPassword = password;
-    if (!selected_sponsor) {
-      sponsorUser=mainRefral.id
-    }else{
-      const mainRefralselected_sponsor:any = await User.findOne({where:{username:selected_sponsor}})
-      sponsorUser=mainRefralselected_sponsor.id
-    }
-
-
+    const sponsorUser: any = await findAvailableSponsor(referral_code);
     if (!sponsorUser) {
       return res.status(400).json({
         message: "No available sponsor found for the provided referral code.",
@@ -64,7 +100,7 @@ export const signup = async (req: Request, res: Response) => {
       bank_details,
       upi_number,
       referral_code: username,
-      referred_by: sponsorUser,
+      referred_by: sponsorUser ? sponsorUser.id : null,
       main_referred_by: mainRefral.id
     });
     await useEpin(epin, newUser.id);
